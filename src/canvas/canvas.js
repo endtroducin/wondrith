@@ -1,25 +1,36 @@
 // src/canvas/canvas.js
 import Konva from "konva";
-import { appState } from "../appState.js";
+import { appState } from "../core/appState.js";
+import { updateStageSize } from "../core/listeners.js";
+
+updateStageSize();
 
 export function initCanvas(containerId = "canvas-container") {
-	const stage = new Konva.Stage({
+	appState.stage = new Konva.Stage({
 		container: containerId,
-		width: window.innerWidth,
-		height: window.innerHeight,
+		width: appState.canvas.width,
+		height: appState.canvas.height,
 	});
 
-	const layer = new Konva.Layer();
-	stage.add(layer);
+	appState.layer = new Konva.Layer();
+	appState.stage.add(appState.layer);
 
-	appState.stage = stage;
-	appState.layer = layer;
+	appState.stage.on("mousedown", (e) => {
+		const clickedOnCard = e.target.findAncestor(".card", true); // assuming 'card' class
+		const expandedId = appState.debug.expandedCardId;
 
-	stage.on("mousemove", () => {
-		const pos = stage.getPointerPosition();
-		if (pos) {
-			appState.mouseX = pos.x;
-			appState.mouseY = pos.y;
+		if (!clickedOnCard && expandedId) {
+			const expandedGroup = appState.stage.findOne(`#${expandedId}`);
+			if (expandedGroup) {
+				expandedGroup.to({
+					scaleX: 1,
+					scaleY: 1,
+					duration: 0.2,
+					easing: Konva.Easings.EaseInOut,
+				});
+				appState.debug.expandedCardId = null;
+				appState.stage.draw();
+			}
 		}
 	});
 }

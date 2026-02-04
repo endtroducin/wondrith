@@ -1,8 +1,11 @@
-// src/appState.js
-
 export const appState = {
 	stage: null, // Konva stage
 	layer: null, // Main canvas layer
+
+	canvas: {
+		height: null,
+		width: null,
+	},
 
 	cards: {}, // Indexed by card _id
 
@@ -21,6 +24,12 @@ export const appState = {
 		enabled: true,
 		panelVisible: true,
 		hoveredCardId: null,
+		expandedCardId: null,
+	},
+
+	mouse: {
+		x: null,
+		y: null,
 	},
 };
 
@@ -86,7 +95,7 @@ export const appState = {
 // 			major: 1,
 // 			axis: 1.5,
 // 		},
-// 	},
+// 	},┗ ━ ┃ ┣ ┳
 
 // 	// 🃏 Default card size + styling
 // 	card: {

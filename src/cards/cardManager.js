@@ -1,5 +1,5 @@
 // src/cards/cardManager.js
-import { appState } from "../appState.js";
+import { appState } from "../core/appState.js";
 import { saveCard, loadAllCards } from "../db/pouch.js";
 import { drawCard } from "./cardRenderer.js";
 import { defaultCardSchema } from "../schema/cardTemplate.js";

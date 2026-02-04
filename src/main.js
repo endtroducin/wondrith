@@ -1,39 +1,21 @@
-// src/
-// ├── appState.js              # 🧠 Global single source of truth (SSOT)
-// ├── main.js                  # 🚀 Entrypoint that wires everything together
-
-// ├── canvas/                  # 🎨 Visuals and drawing logic
-// │   ├── canvas.js            # Init Konva stage/layers
-// │   ├── cardRenderer.js      # Only draws cards (no logic)
-// │   └── gridRenderer.js      # Optional: grid drawing
-
-// ├── logic/                   # 🧩 Business logic and state updates
-// │   └── cardManager.js       # Add, move, delete, update cards
-
-// ├── db/                      # 💾 Persistence layer (PouchDB)
-// │   └── pouch.js             # Save/load cards
-
-// ├── ui/                      # 🧑‍💻 DOM overlays (debug panel, etc.)
-// │   └── debugPanel.js
-
-// ├── system/                  # ⚙️ Global listeners, sync tools
-// │   └── listeners.js
-
-// ├── helpers/                 # 🔣 Math, utils, transforms
-// │   └── mathHelpers.js
-
-// └── style/
-//     └── debug.css            # Optional styles
-
 // src/main.js
 import { initCanvas } from "./canvas/canvas.js";
 import { initDebugPanel } from "./ui/debugPanel.js";
 import { loadCards, createCard } from "./cards/cardManager.js";
 
+// Import Listeners
+import { setupResizeListener, setupMousePositionListener } from "./core/listeners.js";
+import { startProximityMonitor } from "./cards/proximityManager.js";
+
 // Kick off the app
 initCanvas();
 initDebugPanel();
 loadCards();
+
+// Setup Listeners
+setupResizeListener();
+setupMousePositionListener();
+startProximityMonitor();
 
 // Add a test card on click
 document.getElementById("add-card-btn").addEventListener("click", () => {

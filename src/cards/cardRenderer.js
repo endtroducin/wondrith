@@ -1,7 +1,8 @@
 // src/cards/cardRenderer.js
 import Konva from "konva";
-import { appState } from "../appState.js";
+import { appState } from "../core/appState.js";
 import { saveCard, deleteCard } from "../db/pouch.js";
+import { CARD_DEFAULT_STYLE, CARD_LIFTED_STYLE } from "../core/constants.js";
 
 export function drawCard(cardData) {
 	const s = appState.cardStyle;
@@ -82,21 +83,90 @@ export function drawCard(cardData) {
 		appState.debug.activeCardId = null;
 		appState.cards[cardData._id] = cardData;
 		saveCard(cardData);
+
+		// Reset all cards' corners
+		Object.values(appState.cards).forEach((card) => {
+			const g = appState.stage.findOne(`#${card._id}`);
+			const r = g?.findOne("Rect");
+			if (r) r.cornerRadius(8);
+		});
+
+		appState.layer.draw();
 	});
 
 	// Full Schema on Hover
 	group.on("mouseenter", () => {
 		appState.debug.hoveredCardId = cardData._id;
+
+		group.to({
+			scaleX: 1.05,
+			scaleY: 1.05,
+			duration: 0.15,
+			shadowBlur: 15,
+			shadowOpacity: 0.4,
+			easing: Konva.Easings.EaseInOut,
+		});
+		group.getStage().container().style.cursor = "pointer";
 	});
 
 	group.on("mouseleave", () => {
 		appState.debug.hoveredCardId = null;
+
+		if (!group.isDragging()) {
+			group.to({
+				scaleX: 1,
+				scaleY: 1,
+				duration: 0.15,
+				shadowBlur: 5,
+				shadowOpacity: 0.2,
+				easing: Konva.Easings.EaseInOut,
+			});
+		}
+		group.getStage().container().style.cursor = "default";
+	});
+
+	group.on("dblclick", () => {
+		// Collapse previously expanded card (if any)
+		if (appState.debug.expandedCardId) {
+			const prevGroup = appState.stage.findOne(`#${appState.debug.expandedCardId}`);
+			if (prevGroup && prevGroup !== group) {
+				prevGroup.to({
+					scaleX: 1,
+					scaleY: 1,
+					duration: 0.2,
+					easing: Konva.Easings.EaseInOut,
+				});
+			}
+		}
+
+		// Expand current card
+		group.to({
+			scaleX: 2.0,
+			scaleY: 2.0,
+			duration: 0.2,
+			easing: Konva.Easings.EaseInOut,
+		});
+
+		group.moveToTop();
+		appState.debug.expandedCardId = group.id();
+		appState.stage.draw();
 	});
 
 	deleteBtn.on("click", async () => {
 		await deleteCard(cardData._id);
 		group.destroy();
 		appState.layer.draw();
+	});
+
+	const bounds = group.getClientRect({ relativeTo: group });
+
+	group.offsetX(bounds.width / 2);
+	group.offsetY(bounds.height / 2);
+
+	// Update group position to compensate for new offset
+	group.position({
+		x: cardData.position.x + bounds.width / 2,
+		y: cardData.position.y + bounds.height / 2,
 	});
 }
 

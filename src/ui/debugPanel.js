@@ -1,5 +1,5 @@
 // src/ui/debugPanel.js
-import { appState } from "../appState.js";
+import { appState } from "../core/appState.js";
 
 let panel, toggle;
 
@@ -53,10 +53,6 @@ export function initDebugPanel() {
 }
 
 function getDebugText() {
-	const stage = appState.stage;
-	const stageWidth = stage?.width?.() || 0;
-	const stageHeight = stage?.height?.() || 0;
-
 	let hoveredCardDetails = "  None";
 	const hoveredId = appState.debug.hoveredCardId;
 
@@ -71,7 +67,8 @@ function getDebugText() {
 	return `
 🛠️  Debug Panel
 ━━━━━━━━━━━━━━━━━━━━━━━━
-Stage:       ${stageWidth} × ${stageHeight}
+🧊Mouse:       ${appState.mouse.x} × ${appState.mouse.y}
+🧊Canvas:      ${appState.canvas.width} × ${appState.canvas.height}
 Cards:       ${Object.keys(appState.cards).length}
 Dragging:    ${appState.activeDragCardId || "None"}
 
