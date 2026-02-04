@@ -5,7 +5,7 @@ import { loadCards, createCard } from "./cards/cardManager.js";
 
 // Import Listeners
 import { setupResizeListener, setupMousePositionListener } from "./core/listeners.js";
-import { startProximityMonitor } from "./cards/proximityManager.js";
+// import { startProximityMonitor } from "./cards/proximityManager.js";
 
 // Kick off the app
 initCanvas();
@@ -15,7 +15,7 @@ loadCards();
 // Setup Listeners
 setupResizeListener();
 setupMousePositionListener();
-startProximityMonitor();
+// startProximityMonitor();
 
 // Add a test card on click
 document.getElementById("add-card-btn").addEventListener("click", () => {

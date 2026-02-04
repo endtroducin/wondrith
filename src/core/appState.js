@@ -31,6 +31,27 @@ export const appState = {
 		x: null,
 		y: null,
 	},
+
+	zones: {
+		ideaZone: {
+			id: "ideaZone",
+			x: 50,
+			y: 50,
+			width: 400,
+			height: 600,
+			color: "#9aedf8",
+			label: "Ideas",
+		},
+		taskZone: {
+			id: "taskZone",
+			x: 500,
+			y: 50,
+			width: 400,
+			height: 600,
+			color: "#efc689",
+			label: "Tasks",
+		},
+	},
 };
 
 // // 🧠 Global App State

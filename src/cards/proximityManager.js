@@ -1,3 +1,6 @@
+/*
+
+
 import { appState } from "../core/appState.js";
 
 export function startProximityMonitor() {
@@ -58,3 +61,5 @@ export function startProximityMonitor() {
 		}
 	}, 100);
 }
+
+*/

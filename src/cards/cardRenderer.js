@@ -2,6 +2,8 @@
 import Konva from "konva";
 import { appState } from "../core/appState.js";
 import { saveCard, deleteCard } from "../db/pouch.js";
+import { detectZone } from "../zone/zoneManager.js";
+import { updateCardVisual } from "../core/helpers.js";
 import { CARD_DEFAULT_STYLE, CARD_LIFTED_STYLE } from "../core/constants.js";
 
 export function drawCard(cardData) {
@@ -15,7 +17,7 @@ export function drawCard(cardData) {
 	});
 
 	// ⬜️ Background
-	const rect = new Konva.Rect({
+	const background = new Konva.Rect({
 		width: s.width,
 		height: s.height,
 		fill: s.fill,
@@ -24,7 +26,11 @@ export function drawCard(cardData) {
 		strokeWidth: s.strokeWidth,
 		shadowBlur: s.shadowBlur,
 		shadowOpacity: s.shadowOpacity,
+		name: "background",
 	});
+
+	// 🧠 Store a reference directly on the group
+	group.background = background;
 
 	// 🔤 Title
 	const text = new Konva.Text({
@@ -56,6 +62,8 @@ export function drawCard(cardData) {
 		fill: "#444",
 	});
 
+	group.zoneLabel = space;
+
 	// ❌ Delete Button
 	const deleteBtn = new Konva.Rect({
 		x: s.width - 20,
@@ -66,7 +74,7 @@ export function drawCard(cardData) {
 		cornerRadius: 3,
 	});
 
-	group.add(rect, text, desc, space, deleteBtn);
+	group.add(background, text, desc, space, deleteBtn);
 	appState.layer.add(group);
 	appState.layer.draw();
 
@@ -76,7 +84,21 @@ export function drawCard(cardData) {
 	});
 
 	group.on("dragmove", () => {
-		cardData.position = { x: group.x(), y: group.y() };
+		// 1️⃣ Sync card data with visual position
+		cardData.position = {
+			x: group.x(),
+			y: group.y(),
+		};
+
+		// 2️⃣ Ask zone system which zone this position belongs to
+		const detectedZone = detectZone(cardData.position);
+
+		// 3️⃣ Only react if zone actually changed
+		if (cardData.currentZone !== (detectedZone?.id || null)) {
+			cardData.currentZone = detectedZone ? detectedZone.id : null;
+			updateCardVisual(cardData, group);
+			console.log(`📦 Card now in zone: ${cardData.currentZone || "none"}`);
+		}
 	});
 
 	group.on("dragend", () => {
@@ -98,31 +120,31 @@ export function drawCard(cardData) {
 	group.on("mouseenter", () => {
 		appState.debug.hoveredCardId = cardData._id;
 
-		group.to({
-			scaleX: 1.05,
-			scaleY: 1.05,
-			duration: 0.15,
-			shadowBlur: 15,
-			shadowOpacity: 0.4,
-			easing: Konva.Easings.EaseInOut,
-		});
-		group.getStage().container().style.cursor = "pointer";
+		// group.to({
+		// 	scaleX: 1.05,
+		// 	scaleY: 1.05,
+		// 	duration: 0.15,
+		// 	shadowBlur: 15,
+		// 	shadowOpacity: 0.4,
+		// 	easing: Konva.Easings.EaseInOut,
+		// });
+		// group.getStage().container().style.cursor = "pointer";
 	});
 
 	group.on("mouseleave", () => {
 		appState.debug.hoveredCardId = null;
 
-		if (!group.isDragging()) {
-			group.to({
-				scaleX: 1,
-				scaleY: 1,
-				duration: 0.15,
-				shadowBlur: 5,
-				shadowOpacity: 0.2,
-				easing: Konva.Easings.EaseInOut,
-			});
-		}
-		group.getStage().container().style.cursor = "default";
+		// if (!group.isDragging()) {
+		// 	group.to({
+		// 		scaleX: 1,
+		// 		scaleY: 1,
+		// 		duration: 0.15,
+		// 		shadowBlur: 5,
+		// 		shadowOpacity: 0.2,
+		// 		easing: Konva.Easings.EaseInOut,
+		// 	});
+		// }
+		// group.getStage().container().style.cursor = "default";
 	});
 
 	group.on("dblclick", () => {
@@ -168,6 +190,8 @@ export function drawCard(cardData) {
 		x: cardData.position.x + bounds.width / 2,
 		y: cardData.position.y + bounds.height / 2,
 	});
+
+	return group;
 }
 
 // import Konva from "konva";

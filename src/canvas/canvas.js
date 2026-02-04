@@ -2,19 +2,28 @@
 import Konva from "konva";
 import { appState } from "../core/appState.js";
 import { updateStageSize } from "../core/listeners.js";
+import { drawZones } from "../zone/zoneRenderer.js";
 
 updateStageSize();
 
+// 🖼️ Initialize the canvas
 export function initCanvas(containerId = "canvas-container") {
+	// 1️⃣ Create the Konva Stage (top-level container)
 	appState.stage = new Konva.Stage({
 		container: containerId,
 		width: appState.canvas.width,
 		height: appState.canvas.height,
 	});
 
+	// 2️⃣ Create and add a layer (holds drawable elements)
 	appState.layer = new Konva.Layer();
 	appState.stage.add(appState.layer);
 
+	// 3️⃣ Draw all background zones (defined in appState.zones)
+	drawZones();
+
+	// 4️⃣ Global mousedown logic
+	// 👉 Used later to collapse expanded cards, etc.
 	appState.stage.on("mousedown", (e) => {
 		const clickedOnCard = e.target.findAncestor(".card", true); // assuming 'card' class
 		const expandedId = appState.debug.expandedCardId;
@@ -33,6 +42,8 @@ export function initCanvas(containerId = "canvas-container") {
 			}
 		}
 	});
+
+	console.log("✅ Canvas initialized");
 }
 
 // // canvas.js

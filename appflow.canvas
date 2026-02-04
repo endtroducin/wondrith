@@ -465,7 +465,7 @@
       "x": -1900,
       "y": -20,
       "width": 500,
-      "height": 300,
+      "height": 220,
       "file": "index.html"
     },
     {
@@ -480,8 +480,8 @@
     {
       "type": "file",
       "id": "c8938f6e-1ff3-46c1-ae3b-423883dad5e3",
-      "x": -1100,
-      "y": 1320,
+      "x": -2840,
+      "y": 1760,
       "width": 500,
       "height": 300,
       "file": "src/appState.js"
@@ -593,6 +593,156 @@
       "width": 895.5245730499629,
       "height": 360.52425570249886,
       "label": "My group"
+    },
+    {
+      "type": "text",
+      "id": "b484e5b6-581a-4cd2-beb8-3066ff8434fd",
+      "x": -3140,
+      "y": 460,
+      "width": 360,
+      "height": 60,
+      "color": "1",
+      "text": "#### [stage]([src/core/appState.js?range=1:0-2:0]) Konva Stage"
+    },
+    {
+      "type": "text",
+      "id": "f383c47e-3b01-4e70-b45f-30b2b47da86a",
+      "x": -3140,
+      "y": 520,
+      "width": 360,
+      "height": 60,
+      "color": "1",
+      "text": "#### [layer]([src/core/appState.js?range=2:0-3:0]) Main Canvas Layer"
+    },
+    {
+      "type": "text",
+      "id": "540e8202-cbcb-494f-8d74-ee001bc33f60",
+      "x": -3140,
+      "y": 580,
+      "width": 360,
+      "height": 120,
+      "color": "5",
+      "text": "#### [canvas]([src/core/appState.js?range=4:0-5:0]) Canvas Dimensions\n- height\n- width"
+    },
+    {
+      "type": "text",
+      "id": "2900c6b7-7dce-46bf-9960-e2651330eb76",
+      "x": -3140,
+      "y": 700,
+      "width": 360,
+      "height": 60,
+      "color": "1",
+      "text": "#### [cards]([src/core/appState.js?range=9:0-10:0]) Index of Cards"
+    },
+    {
+      "type": "text",
+      "id": "877fc6c0-c853-43f7-8aa4-6c54606a95f3",
+      "x": -3140,
+      "y": 760,
+      "width": 360,
+      "height": 280,
+      "color": "1",
+      "text": "#### [cardStyle]([src/core/appState.js?range=11:0-12:0]) Card Styles\n- width\n- height\n- fill\n- cornerRadius\n- shadowBlur\n- shadowOpactiy\n- stroke\n- strokeWidth"
+    },
+    {
+      "type": "text",
+      "id": "3f0afc65-2db6-41b6-9a90-dd58f7c6e981",
+      "x": -3140,
+      "y": 1040,
+      "width": 360,
+      "height": 180,
+      "color": "1",
+      "text": "#### [debug]([src/core/appState.js?range=22:0-23:0]) Debug Info\n- enabled\n- panelVisible\n- hoveredCardId\n- expandedCardId"
+    },
+    {
+      "type": "group",
+      "id": "1568b1ed-da03-4c13-b8e5-0739c89a7b48",
+      "x": -3160,
+      "y": 360,
+      "width": 400,
+      "height": 1160,
+      "color": "3",
+      "label": ""
+    },
+    {
+      "type": "text",
+      "id": "9beb38ab-1ea2-4e1f-aaca-86447158355e",
+      "x": -3620,
+      "y": 460,
+      "width": 360,
+      "height": 60,
+      "color": "4",
+      "text": "#### Function [updateStageSize](src/core/listeners.js?range=6:0-7:0)"
+    },
+    {
+      "type": "text",
+      "id": "73bd82c1-fae4-4e71-a50a-447034de8ca1",
+      "x": -3160,
+      "y": 360,
+      "width": 400,
+      "height": 80,
+      "color": "3",
+      "text": "---\ntext-align: center\n---\n\n\n# appState"
+    },
+    {
+      "type": "group",
+      "id": "d4884648-dbf2-4341-8558-bcdc286fbb82",
+      "x": -3640,
+      "y": 360,
+      "width": 400,
+      "height": 880,
+      "color": "5",
+      "label": ""
+    },
+    {
+      "type": "text",
+      "id": "881da24f-fa6f-458a-9528-d476cf1adea1",
+      "x": -3640,
+      "y": 360,
+      "width": 400,
+      "height": 80,
+      "color": "5",
+      "text": "---\ntext-align: center\n---\n# listeners"
+    },
+    {
+      "type": "text",
+      "id": "86dd5437-d900-40a5-806a-1bcd4b76c4e5",
+      "x": -3620,
+      "y": 540,
+      "width": 360,
+      "height": 60,
+      "color": "6",
+      "text": "#### Listener [setupResizeListener](src/core/listeners.js?range=21:0-22:0)"
+    },
+    {
+      "type": "text",
+      "id": "0aaa3972-723b-440c-87d6-de814f2bebe7",
+      "x": -3640,
+      "y": 220,
+      "width": 1480,
+      "height": 80,
+      "color": "2",
+      "text": "---\ntext-align: center\n---\n# [main](src/main.js)"
+    },
+    {
+      "type": "text",
+      "id": "9ecd34af-fcfe-493e-af84-aa9e16573c5f",
+      "x": -3140,
+      "y": 1220,
+      "width": 360,
+      "height": 120,
+      "color": "5",
+      "text": "#### [mouse]([src/core/appState.js?range=29:0-30:0]) Mouse Position\n- x\n- y"
+    },
+    {
+      "type": "text",
+      "id": "8c0a2c30-1215-4a2d-a5b4-4cb996fc2f31",
+      "x": -3620,
+      "y": 620,
+      "width": 360,
+      "height": 60,
+      "color": "6",
+      "text": "#### Listener [setupMousePositionListener](src/core/listeners.js?range=29:0-30:0)"
     }
   ],
   "edges": [
@@ -727,16 +877,6 @@
       "shape": "curved"
     },
     {
-      "id": "caf8f522-06f3-407a-8d4c-0b84c7858cfe",
-      "fromNode": "c8938f6e-1ff3-46c1-ae3b-423883dad5e3",
-      "fromSide": "right",
-      "toNode": "6a7ffe4e-a203-4367-89e5-c267cba01364",
-      "toSide": "left",
-      "toEnd": "arrow",
-      "style": "solid",
-      "shape": "curved"
-    },
-    {
       "id": "722b9532-b09d-4238-b4c9-c149f8b9267f",
       "fromNode": "3cfdcfff-b6d6-4528-9139-6b6dba650cbb",
       "fromSide": "left",
@@ -797,16 +937,6 @@
       "shape": "curved"
     },
     {
-      "id": "5dabff0b-784e-4901-8da1-a78156d96b4f",
-      "fromNode": "c8938f6e-1ff3-46c1-ae3b-423883dad5e3",
-      "fromSide": "right",
-      "toNode": "8615d28c-622c-47bd-9b73-74b8eac54825",
-      "toSide": "left",
-      "toEnd": "arrow",
-      "style": "solid",
-      "shape": "curved"
-    },
-    {
       "id": "256e2810-a0a5-4185-b15f-6fb2c6eba64f",
       "fromNode": "0795b14f-7db1-45c1-85ee-0a48f65e6dfe",
       "fromSide": "left",
@@ -823,6 +953,72 @@
       "toNode": "6a7ffe4e-a203-4367-89e5-c267cba01364",
       "toSide": "top",
       "toEnd": "arrow",
+      "style": "solid",
+      "shape": "curved"
+    },
+    {
+      "id": "4ac5e655-0e75-4932-a5c6-490eab7bda2d",
+      "fromNode": "9beb38ab-1ea2-4e1f-aaca-86447158355e",
+      "fromSide": "right",
+      "toNode": "540e8202-cbcb-494f-8d74-ee001bc33f60",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "5",
+      "style": "solid",
+      "shape": "curved"
+    },
+    {
+      "id": "f4cbd548-b071-45cb-8a36-6244df414c7d",
+      "fromNode": "86dd5437-d900-40a5-806a-1bcd4b76c4e5",
+      "fromSide": "left",
+      "toNode": "0aaa3972-723b-440c-87d6-de814f2bebe7",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "6",
+      "style": "solid",
+      "shape": "curved"
+    },
+    {
+      "id": "6cbec019-6730-4115-bf81-0c2202317a10",
+      "fromNode": "86dd5437-d900-40a5-806a-1bcd4b76c4e5",
+      "fromSide": "right",
+      "toNode": "9beb38ab-1ea2-4e1f-aaca-86447158355e",
+      "toSide": "right",
+      "toEnd": "arrow",
+      "color": "6",
+      "style": "solid",
+      "shape": "curved"
+    },
+    {
+      "id": "b9bb43f4-de81-43c0-8349-feaa66960d8b",
+      "fromNode": "73bd82c1-fae4-4e71-a50a-447034de8ca1",
+      "fromSide": "top",
+      "toNode": "0aaa3972-723b-440c-87d6-de814f2bebe7",
+      "toSide": "bottom",
+      "toEnd": "arrow",
+      "color": "6",
+      "style": "solid",
+      "shape": "curved"
+    },
+    {
+      "id": "f040b3ea-117d-4f37-9fcd-32a6d2d107b0",
+      "fromNode": "8c0a2c30-1215-4a2d-a5b4-4cb996fc2f31",
+      "fromSide": "left",
+      "toNode": "0aaa3972-723b-440c-87d6-de814f2bebe7",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "6",
+      "style": "solid",
+      "shape": "curved"
+    },
+    {
+      "id": "56efe0b5-a1d7-441c-ad34-c092d2b50391",
+      "fromNode": "8c0a2c30-1215-4a2d-a5b4-4cb996fc2f31",
+      "fromSide": "right",
+      "toNode": "9ecd34af-fcfe-493e-af84-aa9e16573c5f",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "5",
       "style": "solid",
       "shape": "curved"
     }
