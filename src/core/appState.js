@@ -2,23 +2,25 @@ export const appState = {
 	stage: null, // Konva stage
 	layer: null, // Main canvas layer
 
+	// 🖼️ Canvas & Stage info (updated on resize)
 	canvas: {
 		height: null,
 		width: null,
 	},
 
+	// 🃏 Cards stored by IDappstate.canvas.heightappstate.stage
 	cards: {}, // Indexed by card _id
 
-	cardStyle: {
-		width: 160,
-		height: 100,
-		fill: "#90e0ef",
-		cornerRadius: 8,
-		shadowBlur: 5,
-		shadowOpacity: 0.2,
-		stroke: "#aaa",
-		strokeWidth: 1,
-	},
+	// cardStyle: {
+	// 	width: 160,
+	// 	height: 100,
+	// 	fill: "#90e0ef",
+	// 	cornerRadius: 8,
+	// 	shadowBlur: 5,
+	// 	shadowOpacity: 0.2,
+	// 	stroke: "#aaa",
+	// 	strokeWidth: 1,
+	// },
 
 	debug: {
 		enabled: true,
@@ -33,24 +35,24 @@ export const appState = {
 	},
 
 	zones: {
-		ideaZone: {
-			id: "ideaZone",
-			x: 50,
-			y: 50,
-			width: 400,
-			height: 600,
-			color: "#9aedf8",
-			label: "Ideas",
-		},
-		taskZone: {
-			id: "taskZone",
-			x: 500,
-			y: 50,
-			width: 400,
-			height: 600,
-			color: "#efc689",
-			label: "Tasks",
-		},
+		// ideaZone: {
+		// 	id: "ideaZone",
+		// 	x: 50,
+		// 	y: 50,
+		// 	width: 400,
+		// 	height: 600,
+		// 	color: "#9aedf8",
+		// 	label: "Ideas",
+		// },
+		// taskZone: {
+		// 	id: "taskZone",
+		// 	x: 500,
+		// 	y: 50,
+		// 	width: 400,
+		// 	height: 600,
+		// 	color: "#efc689",
+		// 	label: "Tasks",
+		// },
 	},
 };
 

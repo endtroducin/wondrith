@@ -1,5 +1,8 @@
 import Konva from "konva";
 import { appState } from "../core/appState.js";
+import { DEFAULT_ZONES } from "../core/constants.js";
+
+appState.zones = DEFAULT_ZONES;
 
 export function drawZones() {
 	const { layer } = appState;

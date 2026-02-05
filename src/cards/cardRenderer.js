@@ -4,11 +4,10 @@ import { appState } from "../core/appState.js";
 import { saveCard, deleteCard } from "../db/pouch.js";
 import { detectZone } from "../zone/zoneManager.js";
 import { updateCardVisual } from "../core/helpers.js";
+import { CARD_STYLE } from "../core/constants.js";
 import { CARD_DEFAULT_STYLE, CARD_LIFTED_STYLE } from "../core/constants.js";
 
 export function drawCard(cardData) {
-	const s = appState.cardStyle;
-
 	const group = new Konva.Group({
 		x: cardData.position.x,
 		y: cardData.position.y,
@@ -18,14 +17,14 @@ export function drawCard(cardData) {
 
 	// ⬜️ Background
 	const background = new Konva.Rect({
-		width: s.width,
-		height: s.height,
-		fill: s.fill,
-		cornerRadius: s.cornerRadius,
-		stroke: s.stroke,
-		strokeWidth: s.strokeWidth,
-		shadowBlur: s.shadowBlur,
-		shadowOpacity: s.shadowOpacity,
+		width: CARD_STYLE.width,
+		height: CARD_STYLE.height,
+		fill: CARD_STYLE.fill,
+		cornerRadius: CARD_STYLE.cornerRadius,
+		stroke: CARD_STYLE.stroke,
+		strokeWidth: CARD_STYLE.strokeWidth,
+		shadowBlur: CARD_STYLE.shadowBlur,
+		shadowOpacity: CARD_STYLE.shadowOpacity,
 		name: "background",
 	});
 
@@ -38,7 +37,7 @@ export function drawCard(cardData) {
 		fontSize: 16,
 		x: 10,
 		y: 10,
-		width: s.width - 20,
+		width: CARD_STYLE.width - 20,
 		fill: "#222",
 	});
 
@@ -66,7 +65,7 @@ export function drawCard(cardData) {
 
 	// ❌ Delete Button
 	const deleteBtn = new Konva.Rect({
-		x: s.width - 20,
+		x: CARD_STYLE.width - 20,
 		y: 5,
 		width: 15,
 		height: 15,

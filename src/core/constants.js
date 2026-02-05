@@ -1,3 +1,48 @@
+// core/constants.js
+
+// 🎨 Color palette
+export const COLORS = {
+	ideas: "#90e0ef",
+	tasks: "#f4a261",
+	neutral: "#ccc",
+	debugPanelBg: "rgba(0, 0, 0, 0.8)",
+	debugText: "#0f0",
+};
+
+// 🧱 Card visual style (shared by all cards)
+export const CARD_STYLE = {
+	width: 160,
+	height: 100,
+	fill: COLORS.neutral,
+	cornerRadius: 8,
+	shadowBlur: 5,
+	shadowOpacity: 0.2,
+	stroke: "#aaa",
+	strokeWidth: 1,
+};
+
+// 📦 Zone layout presets (you can use these to generate `appState.zones`)
+export const DEFAULT_ZONES = {
+	ideaZone: {
+		id: "ideaZone",
+		x: 50,
+		y: 50,
+		width: 400,
+		height: 600,
+		color: COLORS.ideas,
+		label: "Ideas",
+	},
+	taskZone: {
+		id: "taskZone",
+		x: 500,
+		y: 50,
+		width: 400,
+		height: 600,
+		color: COLORS.tasks,
+		label: "Tasks",
+	},
+};
+
 // Style of card when dragged
 export const CARD_LIFTED_STYLE = {
 	scale: { x: 1.1, y: 1.1 },
