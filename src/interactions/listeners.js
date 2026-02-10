@@ -1,4 +1,4 @@
-import { appState } from "./appState.js";
+import { appState } from "../core/appState.js";
 
 //#region 🧊 Window Resize Listener
 /**

@@ -1,10 +1,10 @@
 // src/cards/cardManager.js
 import { appState } from "../core/appState.js";
-import { saveCard, loadAllCards } from "../db/pouch.js";
-import { drawCard } from "./cardRenderer.js";
-import { defaultCardSchema } from "./cardSchema.js";
-import { detectZone } from "../zone/zoneManager.js";
-import { updateCardVisual } from "../core/helpers.js";
+import { saveCard, loadAllCards } from "../services/pouchdb.js";
+import { drawCard } from "../renderers/cardRenderer.js";
+import { defaultCardSchema } from "../core/schemas.js";
+import { detectZone } from "./zoneActions.js";
+import { updateCardVisual } from "../renderers/zoneRenderer.js";
 
 export async function createCard(overrides = {}) {
 	const newCard = defaultCardSchema(overrides);

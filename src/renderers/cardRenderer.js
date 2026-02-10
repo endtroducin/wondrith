@@ -1,11 +1,18 @@
-// src/cards/cardRenderer.js
+// 🔧 Core
 import Konva from "konva";
 import { appState } from "../core/appState.js";
-import { saveCard, deleteCard } from "../db/pouch.js";
-import { detectZone } from "../zone/zoneManager.js";
-import { updateCardVisual } from "../core/helpers.js";
-import { CARD_STYLE } from "../core/constants.js";
-import { CARD_DEFAULT_STYLE, CARD_LIFTED_STYLE } from "../core/constants.js";
+
+// 📦 Constants
+import { CARD_STYLE, CARD_DEFAULT_STYLE, CARD_LIFTED_STYLE } from "../core/styles.js";
+
+// 🧠 Logic
+import { detectZone } from "../actions/zoneActions.js";
+
+// 🎨 Render helpers
+import { updateCardVisual } from "./zoneRenderer.js";
+
+// 🔌 Ports
+import { saveCard, deleteCard } from "../services/pouchdb.js";
 
 export function drawCard(cardData) {
 	const group = new Konva.Group({
