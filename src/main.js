@@ -7,6 +7,7 @@ import { loadCards } from "./actions/cardActions.js";
 import { initDebugPanel } from "./renderers/debugRenderer.js";
 import { drawZones } from "./renderers/zoneRenderer.js";
 import { drawGrid } from "./renderers/gridRenderer.js";
+import { updateCameraBounds } from "./actions/cameraActions.js";
 
 // Step 1: Setup Konva canvas
 initCanvas();
@@ -26,6 +27,7 @@ setupInteractionListeners();
 // Step 6: Listen to stage size
 window.addEventListener("resize", handleResize);
 handleResize();
+updateCameraBounds();
 
 // Step 7: Draw Zones
 drawZones();

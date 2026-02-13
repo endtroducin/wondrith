@@ -1,7 +1,3 @@
-// 📍 src/core/appState.js
-// 🧠 This is your single source of live app data.
-// UI, renderers, and interactions all use this to know the current state.
-
 export const appState = {
 	stage: null, // Konva stage reference
 	layer: null, // Main canvas layer
@@ -16,32 +12,25 @@ export const appState = {
 		hoveredCardId: null,
 		activeCardId: null,
 	},
+	camera: {
+		// Current camera offset (where the stage is visually positioned)
+		position: { x: 0, y: 0 },
+
+		// Current zoom level
+		zoom: 1,
+
+		// Viewport size (in pixels)
+		viewport: {
+			width: window.innerWidth,
+			height: window.innerHeight,
+		},
+
+		// Calculated camera bounds — will update after camera moves
+		bounds: {
+			top: 0,
+			right: 0,
+			bottom: 0,
+			left: 0,
+		},
+	},
 };
-
-// export const appState = {
-// 	stage: null, // Konva stage
-// 	layer: null, // Main canvas layer
-
-// 	// 🖼️ Canvas & Stage info (updated on resize)
-// 	canvas: {
-// 		height: null,
-// 		width: null,
-// 	},
-
-// 	// 🃏 Cards stored by IDappstate.canvas.heightappstate.stage
-// 	cards: {}, // Indexed by card _id
-
-// 	debug: {
-// 		enabled: true,
-// 		panelVisible: true,
-// 		hoveredCardId: null,
-// 		expandedCardId: null,
-// 	},
-
-// 	mouse: {
-// 		x: null,
-// 		y: null,
-// 	},
-
-// 	zones: {},
-// };

@@ -107,6 +107,13 @@ Canvas:      ${appState.canvas.width} × ${appState.canvas.height}
 Cards:       ${Object.keys(appState.cards).length}
 Dragging:    ${appState.activeDragCardId || "None"}
 
+📷 Camera View:
+━━━━━━━━━━━━━━━━━━━━━━━━
+Top:       ${Math.round(appState.camera.bounds.top)}
+Right:     ${Math.round(appState.camera.bounds.right)}
+Bottom:    ${Math.round(appState.camera.bounds.bottom)}
+Left:      ${Math.round(appState.camera.bounds.left)}
+
 🖱️ Hovered Card:
 ━━━━━━━━━━━━━━━━━━━━━━━━
 ${hoveredCardDetails}
