@@ -1,74 +1,109 @@
-// Imports
-import { appState } from "../core/appState.js";
+// 📍 src/ui/debugPanel.js
+// 🛠️ Renders the floating debug panel and updates it live based on appState
 
-let panel, toggle;
+import { appState } from "../core/appState.js";
+import { drawGrid } from "./gridRenderer.js";
+import { moveCameraTo } from "../actions/cameraActions.js";
+
+let panel, toggle, debugTextBlock;
 
 export function initDebugPanel() {
-	// Prevent duplicate panels
+	// 🔁 Avoid duplicates
 	if (document.getElementById("debug-panel")) return;
 
-	// Create toggle button
+	// 🧲 Toggle Button
 	toggle = document.createElement("button");
 	toggle.id = "debug-toggle";
 	toggle.innerText = "⚙️ Debug";
-	toggle.style.position = "fixed";
-	toggle.style.top = "10px";
-	toggle.style.right = "10px";
-	toggle.style.zIndex = "9999";
-	toggle.style.padding = "6px";
+	Object.assign(toggle.style, {
+		position: "fixed",
+		top: "10px",
+		right: "10px",
+		zIndex: "9999",
+		padding: "6px",
+	});
 	document.body.appendChild(toggle);
 
-	// Create the panel
+	// 🧱 Debug Panel Element
 	panel = document.createElement("div");
 	panel.id = "debug-panel";
-	panel.style.position = "fixed";
-	panel.style.top = "50px";
-	panel.style.right = "10px";
-	panel.style.width = "250px";
-	panel.style.background = "rgba(0,0,0,0.8)";
-	panel.style.color = "#0f0";
-	panel.style.fontFamily = "monospace";
-	panel.style.fontSize = "12px";
-	panel.style.padding = "8px";
-	panel.style.borderRadius = "6px";
-	panel.style.zIndex = "9998";
-	panel.style.whiteSpace = "pre-wrap";
+	Object.assign(panel.style, {
+		position: "fixed",
+		top: "50px",
+		right: "10px",
+		width: "250px",
+		background: "rgba(0,0,0,0.85)",
+		color: "#0f0",
+		fontFamily: "monospace",
+		fontSize: "12px",
+		padding: "8px",
+		borderRadius: "6px",
+		whiteSpace: "pre-wrap",
+		zIndex: "9998",
+	});
 	document.body.appendChild(panel);
 
-	// Default visible
+	// 🧩 Default state is visible
 	appState.debug.panelVisible = true;
 	panel.style.display = "block";
 
-	// Toggle logic
+	// ✏️ Create a text block for real-time updates
+	debugTextBlock = document.createElement("pre");
+	debugTextBlock.id = "debug-text";
+	debugTextBlock.style.marginBottom = "8px";
+	panel.appendChild(debugTextBlock);
+
+	// 🎛️ Add camera control buttons
+	const buttonRow = document.createElement("div");
+	buttonRow.innerHTML = `
+	<button>📷 Idea</button><button>📷 Plan</button><button>📷 Task</button>
+	`;
+	Array.from(buttonRow.children).forEach((btn) => {
+		btn.style.margin = "4px 4px 0 0";
+		btn.style.fontSize = "12px";
+		btn.style.cursor = "pointer";
+	});
+	panel.appendChild(buttonRow);
+
+	// 🎯 Hook up camera actions
+	const [btnIdea, btnPlan, btnTask] = buttonRow.querySelectorAll("button");
+	btnIdea.onclick = () => moveCameraTo("idea");
+	btnPlan.onclick = () => moveCameraTo("plan");
+	btnTask.onclick = () => moveCameraTo("task");
+
+	// 🎛️ Toggle logic
 	toggle.addEventListener("click", () => {
 		appState.debug.panelVisible = !appState.debug.panelVisible;
 		panel.style.display = appState.debug.panelVisible ? "block" : "none";
+		drawGrid();
 	});
 
-	// Update loop
+	// 🖥️ Passive UI Update Loop
 	setInterval(() => {
 		if (!appState.debug.panelVisible) return;
-		panel.textContent = getDebugText();
-	}, 100);
+		debugTextBlock.textContent = formatDebugText();
+	}, 100); // Refresh every 250ms (adjust if needed)
 }
 
-function getDebugText() {
+function formatDebugText() {
 	let hoveredCardDetails = "  None";
 	const hoveredId = appState.debug.hoveredCardId;
 
 	if (hoveredId && appState.cards[hoveredId]) {
 		const card = appState.cards[hoveredId];
 		hoveredCardDetails = `  Title:      ${card.title}
-  Type:       ${card.type}
+  Type:       ${card.type || "Unknown"}
   Position:   x: ${Math.round(card.position.x)}, y: ${Math.round(card.position.y)}
+  Zone:       ${card.currentZone || "None"}
 `;
 	}
 
 	return `
 🛠️  Debug Panel
 ━━━━━━━━━━━━━━━━━━━━━━━━
-🧊Mouse:       ${appState.mouse.x} × ${appState.mouse.y}
-🧊Canvas:      ${appState.canvas.width} × ${appState.canvas.height}
+Time:        ${new Date().toLocaleTimeString()}
+Mouse:       ${appState.mouse.x} × ${appState.mouse.y}
+Canvas:      ${appState.canvas.width} × ${appState.canvas.height}
 Cards:       ${Object.keys(appState.cards).length}
 Dragging:    ${appState.activeDragCardId || "None"}
 
