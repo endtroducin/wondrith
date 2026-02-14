@@ -19,29 +19,48 @@ export function dragmoveHandler(evt) {
 	const card = appState.cards[cardId];
 	if (!card) return;
 
-	// 1️⃣ Update position in SSOT
-	card.position = {
-		x: Math.round(group.x()),
-		y: Math.round(group.y()),
-	};
+	// 1️⃣ Update world position
+	card.position.x = group.x();
+	card.position.y = group.y();
 
-	// 2️⃣ Track pointer position globally
-	const pos = appState.stage.getPointerPosition();
-	appState.mouse.x = pos?.x;
-	appState.mouse.y = pos?.y;
-
-	// 3️⃣ Ask zone system which zone this position belongs to
+	// 2️⃣ Detect zone based on WORLD position
 	const detectedZone = detectZone(card.position);
 
-	// 4️⃣ Only react if zone actually changed
-	const newZoneId = detectedZone?.id || null;
+	const newZoneId = detectedZone ? detectedZone.id : null;
 
+	// 3️⃣ Only react if zone changed
 	if (card.currentZone !== newZoneId) {
 		card.currentZone = newZoneId;
 
-		// Update visual style
+		// Update appearance
 		updateCardVisual(card, group);
 
-		console.log(`📦 Card now in zone: ${card.currentZone || "none"}`);
+		console.log("Zone changed →", newZoneId);
 	}
+
+	// // 1️⃣ Update position in SSOT
+	// card.position = {
+	// 	x: Math.round(group.x()),
+	// 	y: Math.round(group.y()),
+	// };
+
+	// // 2️⃣ Track pointer position globally
+	// // const pos = appState.stage.getPointerPosition();
+	// // appState.mouse.x = pos?.x;
+	// // appState.mouse.y = pos?.y;
+
+	// // 3️⃣ Ask zone system which zone this position belongs to
+	// const detectedZone = detectZone(card.position);
+
+	// // 4️⃣ Only react if zone actually changed
+	// const newZoneId = detectedZone?.id || null;
+
+	// if (card.currentZone !== newZoneId) {
+	// 	card.currentZone = newZoneId;
+
+	// 	// Update visual style
+	// 	updateCardVisual(card, group);
+
+	// 	console.log(`📦 Card now in zone: ${card.currentZone || "none"}`);
+	// }
 }

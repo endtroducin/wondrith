@@ -7,7 +7,7 @@ import { dragstartHandler } from "./dragstart.js";
 import { dragmoveHandler } from "./dragmove.js";
 import { dragendHandler } from "./dragend.js";
 
-import { clampCameraPosition } from "../actions/cameraActions.js";
+// import { clampCameraPosition } from "../actions/cameraActions.js";
 
 export function setupListeners() {
 	// Create card when user clicks a button
@@ -62,18 +62,18 @@ export function handleResize() {
 }
 
 // Example: Pan camera
-export function panStage(deltaX, deltaY) {
-	const stage = appState.stage;
-	const currentPos = stage.position();
-	const zoom = stage.scaleX(); // assuming uniform scale
+// export function panStage(deltaX, deltaY) {
+// 	const stage = appState.stage;
+// 	const currentPos = stage.position();
+// 	const zoom = stage.scaleX(); // assuming uniform scale
 
-	const targetX = currentPos.x + deltaX;
-	const targetY = currentPos.y + deltaY;
+// 	const targetX = currentPos.x + deltaX;
+// 	const targetY = currentPos.y + deltaY;
 
-	const clamped = clampCameraPosition(targetX, targetY, zoom);
-	stage.position(clamped);
-	stage.batchDraw();
-}
+// 	const clamped = clampCameraPosition(targetX, targetY, zoom);
+// 	stage.position(clamped);
+// 	stage.batchDraw();
+// }
 
 // import { appState } from "../core/appState.js";
 

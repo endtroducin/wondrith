@@ -8,6 +8,7 @@ import { initDebugPanel } from "./renderers/debugRenderer.js";
 import { drawZones } from "./renderers/zoneRenderer.js";
 import { drawGrid } from "./renderers/gridRenderer.js";
 import { updateCameraBounds } from "./actions/cameraActions.js";
+import { updateAllCardVisuals } from "./renderers/cardRenderer.js";
 
 // Step 1: Setup Konva canvas
 initCanvas();
@@ -17,6 +18,7 @@ setupListeners();
 
 // Step 3: Load and render saved cards
 loadCards();
+updateAllCardVisuals();
 
 // Step 4: Load Debug Panel
 initDebugPanel();

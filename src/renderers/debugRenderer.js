@@ -1,9 +1,10 @@
 // 📍 src/ui/debugPanel.js
 // 🛠️ Renders the floating debug panel and updates it live based on appState
 
+import { moveCameraTo, setCameraZone } from "../actions/cameraActions.js";
 import { appState } from "../core/appState.js";
 import { drawGrid } from "./gridRenderer.js";
-import { moveCameraTo } from "../actions/cameraActions.js";
+// import { moveCameraTo } from "../actions/cameraActions.js";
 
 let panel, toggle, debugTextBlock;
 

@@ -20,17 +20,18 @@ export function drawGrid() {
 	if (!appState.debug.panelVisible) return;
 
 	const { width, height } = appState.canvas;
+	const range = 10000;
 
 	gridLayer = new Konva.Layer();
 	labelLayer = new Konva.Layer();
 
-	for (let x = 0; x < width; x += GRID_STYLE.spacingSmall) {
-		const isMajor = x % GRID_STYLE.spacingLarge === 0;
+	for (let x = -range; x <= range; x += GRID_STYLE.gridSize) {
+		const isMajor = x % GRID_STYLE.majorLine === 0;
 
 		// Draw vertical grid line
 		gridLayer.add(
 			new Konva.Line({
-				points: [x, 0, x, height],
+				points: [x, -range, x, range],
 				stroke: isMajor ? GRID_STYLE.darkColor : GRID_STYLE.lightColor,
 				strokeWidth: isMajor ? GRID_STYLE.strokeWidthMajor : GRID_STYLE.strokeWidthMinor,
 			}),
@@ -50,13 +51,13 @@ export function drawGrid() {
 		}
 	}
 
-	for (let y = 0; y < height; y += GRID_STYLE.spacingSmall) {
-		const isMajor = y % GRID_STYLE.spacingLarge === 0;
+	for (let y = -range; y <= range; y += GRID_STYLE.gridSize) {
+		const isMajor = y % GRID_STYLE.majorLine === 0;
 
 		// Draw horizontal grid line
 		gridLayer.add(
 			new Konva.Line({
-				points: [0, y, width, y],
+				points: [-range, y, range, y],
 				stroke: isMajor ? GRID_STYLE.darkColor : GRID_STYLE.lightColor,
 				strokeWidth: isMajor ? GRID_STYLE.strokeWidthMajor : GRID_STYLE.strokeWidthMinor,
 			}),

@@ -61,15 +61,30 @@ export const DEFAULT_ZONES = {
 	},
 };
 
-// 📁 src/core/styles.js
-
 export const GRID_STYLE = {
-	spacingSmall: 25,
-	spacingLarge: 100,
+	gridSize: 25,
+	majorLine: 100,
 	lightColor: "#0000001b",
 	darkColor: "#00000039",
 	strokeWidthMajor: 1,
 	strokeWidthMinor: 0.5,
 	labelColor: "#666",
 	labelFontSize: 10,
+};
+
+const CAMERA_PRESETS = {
+	idea: {
+		worldAnchorY: () => appState.zones.ideaZone.y + appState.zones.ideaZone.height,
+		screenAnchorY: () => appState.canvas.height,
+	},
+
+	plan: {
+		worldAnchorY: () => 0,
+		screenAnchorY: () => appState.canvas.height / 2,
+	},
+
+	task: {
+		worldAnchorY: () => appState.zones.taskZone.y,
+		screenAnchorY: () => 0,
+	},
 };

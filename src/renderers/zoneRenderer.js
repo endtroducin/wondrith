@@ -22,42 +22,42 @@ export function drawZones() {
 			id: zone.id,
 		});
 
-		const label = new Konva.Text({
-			x: zone.x + 10,
-			y: zone.y + 10,
-			text: zone.label,
-			fontSize: 16,
-			fill: "#000",
-			fontStyle: "bold",
-		});
+		// const label = new Konva.Text({
+		// 	x: zone.x + 10,
+		// 	y: zone.y + 10,
+		// 	text: zone.label,
+		// 	fontSize: 16,
+		// 	fill: "#000",
+		// 	fontStyle: "bold",
+		// });
 
 		layer.add(rect);
-		layer.add(label);
+		// layer.add(label);
 	});
 
 	layer.draw();
 }
 
-export function updateCardVisual(card, group) {
-	const rect = group.background;
-	const zoneLabel = group.zoneLabel; // 🧾 Reference to the zone text
+// export function updateCardVisual(card, group) {
+// 	const rect = group.background;
+// 	const zoneLabel = group.zoneLabel; // 🧾 Reference to the zone text
 
-	if (!rect || !zoneLabel) return;
+// 	if (!rect || !zoneLabel) return;
 
-	// 🎨 Set fill color based on zone
-	let fillColor = "#ccc";
+// 	// 🎨 Set fill color based on zone
+// 	let fillColor = "#ccc";
 
-	if (card.currentZone === "ideaZone") {
-		fillColor = "#90e0ef";
-	} else if (card.currentZone === "taskZone") {
-		fillColor = "#f4a261";
-	}
+// 	if (card.currentZone === "ideaZone") {
+// 		fillColor = "#90e0ef";
+// 	} else if (card.currentZone === "taskZone") {
+// 		fillColor = "#f4a261";
+// 	}
 
-	// 🖌️ Apply visual updates
-	rect.fill(fillColor);
+// 	// 🖌️ Apply visual updates
+// 	rect.fill(fillColor);
 
-	// ✏️ Update the label text
-	zoneLabel.text(card.currentZone || "Pending");
+// 	// ✏️ Update the label text
+// 	zoneLabel.text(card.currentZone || "Pending");
 
-	group.getLayer().batchDraw(); // Redraw
-}
+// 	group.getLayer().batchDraw(); // Redraw
+// }

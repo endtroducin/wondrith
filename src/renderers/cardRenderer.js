@@ -6,6 +6,7 @@ import { appState } from "../core/appState.js";
 import { CARD_STYLE } from "../core/styles.js";
 import { mouseenterHandler } from "../interactions/mouseenter.js";
 import { mouseleaveHandler } from "../interactions/mouseleave.js";
+import { detectZone } from "../actions/zoneActions.js";
 
 export function drawCard(cardData) {
 	const group = new Konva.Group({
@@ -58,30 +59,51 @@ export function drawCard(cardData) {
 //!TO DO removed consts
 //Rerender
 export function updateCardVisual(card, group) {
-	console.log("hello");
+	if (!group.background) return;
 
-	const background = group.background;
-	if (!background) return;
-
-	background.fill("#ffaaaa");
-	group.getLayer().batchDraw(); // For smoother updates
+	let fill = "#ccc";
 
 	if (card.currentZone === "ideaZone") {
-		background.fill("#90e0ef");
-	} else if (card.currentZone === "taskZone") {
-		background.fill("#f4a261");
-	} else {
-		background.fill("#ccc"); // fallback
+		fill = "#90e0ef";
 	}
 
-	group.getLayer().batchDraw(); // ✅ Forces visual update
+	if (card.currentZone === "taskZone") {
+		fill = "#f4a261";
+	}
+
+	group.background.fill(fill);
+	group.getLayer().batchDraw();
+
+	// console.log("hello");
+
+	// const background = group.background;
+	// if (!background) return;
+
+	// background.fill("#ffaaaa");
+	// group.getLayer().batchDraw(); // For smoother updates
+
+	// if (card.currentZone === "ideaZone") {
+	// 	background.fill("#90e0ef");
+	// } else if (card.currentZone === "taskZone") {
+	// 	background.fill("#f4a261");
+	// } else {
+	// 	background.fill("#ccc"); // fallback
+	// }
+
+	// group.getLayer().batchDraw(); // ✅ Forces visual update
 }
 
 export function updateAllCardVisuals() {
 	Object.values(appState.cards).forEach((card) => {
-		if (appState.renderedCards[card._id]) {
-			updateCardVisual(card, appState.renderedCards[card._id]);
-		}
+		const group = appState.renderedCards[card._id];
+		if (!group) return;
+
+		// Re-detect zone based on saved position
+		const detectedZone = detectZone(card.position);
+
+		card.currentZone = detectedZone ? detectedZone.id : null;
+
+		updateCardVisual(card, group);
 	});
 }
 

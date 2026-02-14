@@ -13,19 +13,18 @@ export const appState = {
 		activeCardId: null,
 	},
 	camera: {
-		// Current camera offset (where the stage is visually positioned)
-		position: { x: 0, y: 0 },
-
-		// Current zoom level
+		activeZone: "planZone", // "ideaZone" | "planZone" | "taskZone"
 		zoom: 1,
 
-		// Viewport size (in pixels)
-		viewport: {
-			width: window.innerWidth,
-			height: window.innerHeight,
-		},
+		// World anchor point
+		anchorWorldY: 0,
 
-		// Calculated camera bounds — will update after camera moves
+		// Screen anchor position
+		anchorScreenY: 0,
+
+		// Calculated stage position
+		position: { x: 0, y: 0 },
+
 		bounds: {
 			top: 0,
 			right: 0,
