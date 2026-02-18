@@ -1,38 +1,64 @@
 // 📍 src/main.js
-// 🚀 The app's entry point. Initializes the canvas and loads cards.
+// 🚀 Application entry point.
+// This file ONLY orchestrates initialization order.
+
+import { appState } from "./core/appState.js";
+import { DEFAULT_ZONES } from "./core/styles.js";
 
 import { initCanvas } from "./renderers/canvasRenderer.js";
-import { handleResize, setupInteractionListeners, setupListeners } from "./interactions/listeners.js";
-import { loadCards } from "./actions/cardActions.js";
-import { initDebugPanel } from "./renderers/debugRenderer.js";
 import { drawZones } from "./renderers/zoneRenderer.js";
 import { drawGrid } from "./renderers/gridRenderer.js";
-import { updateCameraBounds } from "./actions/cameraActions.js";
-import { updateAllCardVisuals } from "./renderers/cardRenderer.js";
+import { loadCards } from "./actions/cardActions.js";
+import { initDebugPanel } from "./renderers/debugRenderer.js";
+import { setupListeners, setupInteractionListeners, handleResize } from "./interactions/listeners.js";
+import { updateCameraFromState } from "./actions/cameraActions.js";
 
-// Step 1: Setup Konva canvas
+// =====================================================
+// 1️⃣ Initialize Canvas + Layers
+// =====================================================
 initCanvas();
 
-// Step 2: Register mouse + UI listeners
-setupListeners();
+// =====================================================
+// 2️⃣ Initialize Core State
+// =====================================================
 
-// Step 3: Load and render saved cards
+// Clone default zones into SSOT
+appState.zones = structuredClone(DEFAULT_ZONES);
+
+// Set initial camera zone
+appState.camera.activeZone = "plan";
+
+// =====================================================
+// 3️⃣ Draw Static World (background layer)
+// =====================================================
+drawZones();
+drawGrid();
+
+// =====================================================
+// 4️⃣ Load Data (cards)
+// =====================================================
 loadCards();
-updateAllCardVisuals();
+// ⚠️ loadCards internally calls drawCard
+// ⚠️ and updateAllCardVisuals after load
 
-// Step 4: Load Debug Panel
-initDebugPanel();
-
-// Step 5: Setup Interaction Listeners
+// =====================================================
+// 5️⃣ Setup Interaction System
+// =====================================================
+setupListeners();
 setupInteractionListeners();
 
-// Step 6: Listen to stage size
+// =====================================================
+// 6️⃣ Setup Debug UI
+// =====================================================
+initDebugPanel();
+
+// =====================================================
+// 7️⃣ Handle Resize
+// =====================================================
 window.addEventListener("resize", handleResize);
 handleResize();
-updateCameraBounds();
 
-// Step 7: Draw Zones
-drawZones();
-
-// Step 8: Draw Grids
-drawGrid();
+// =====================================================
+// 8️⃣ Sync Camera to State
+// =====================================================
+updateCameraFromState();

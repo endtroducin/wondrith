@@ -1,19 +1,42 @@
 // 📍 src/interactions/dragstart.js
 // 🧲 Handles the start of a drag interaction on a card.
-
-// We only ever import appState — interactions should not do heavy logic,
-// rendering, or persistence. They react to user input and update state.
+//
+// Responsibilities:
+// - Mark which card is currently being dragged
+// - (Optional) trigger visual lift
+//
+// Does NOT:
+// - Save to DB
+// - Detect zones
+// - Move camera
+//
 
 import { appState } from "../core/appState.js";
 
 export function dragstartHandler(evt) {
-	// evt.target is the Konva shape that started dragging
+	// ======================================================
+	// 🔎 Explicit SSOT References
+	// ======================================================
+
+	const debug = appState.debug;
+	const renderedCards = appState.renderedCards;
+
 	const group = evt.target;
+	const cardId = group.id();
 
-	// Store active dragged card in appState
-	appState.debug.activeCardId = group.id();
+	// ======================================================
+	// 1️⃣ Mark active dragged card
+	// ======================================================
 
-	// Optional: you could add lift animation here, like raise scale
-	// But that should live in animations/cardsAnimations.js
-	console.log("dragstart");
+	debug.activeCardId = cardId;
+
+	// ======================================================
+	// 2️⃣ Optional: Lift animation (visual only)
+	// ======================================================
+
+	// If you want:
+	// const cardGroup = renderedCards[cardId];
+	// animateCardLift(cardGroup);
+
+	console.log("Drag started →", cardId);
 }

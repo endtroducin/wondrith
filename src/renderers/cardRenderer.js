@@ -1,14 +1,40 @@
 // 📍 src/renderers/cardRenderer.js
-// 🧱 Draws a card using Konva. This is *pure drawing logic*.
+// 🧱 Responsible ONLY for drawing + updating card visuals.
+// This file:
+//   - Creates Konva groups
+//   - Applies visual styling
+//   - Animates visual changes
+//   - Stores rendered references
+//
+// It does NOT:
+//   - Detect zones
+//   - Mutate card data
+//   - Save to DB
+//   - Handle drag logic
 
 import Konva from "konva";
 import { appState } from "../core/appState.js";
-import { CARD_STYLE } from "../core/styles.js";
+import { CARD_STYLE, COLORS } from "../core/styles.js";
 import { mouseenterHandler } from "../interactions/mouseenter.js";
 import { mouseleaveHandler } from "../interactions/mouseleave.js";
 import { detectZone } from "../actions/zoneActions.js";
+import gsap from "gsap";
+
+/* ============================================================
+   🧱 DRAW CARD
+============================================================ */
 
 export function drawCard(cardData) {
+	// --------------------------------------------------
+	// 🔎 SSOT REFERENCES (declared up top, always)
+	// --------------------------------------------------
+
+	const worldLayer = appState.layers.world;
+
+	// --------------------------------------------------
+	// 🎬 Create Group
+	// --------------------------------------------------
+
 	const group = new Konva.Group({
 		x: cardData.position.x,
 		y: cardData.position.y,
@@ -16,9 +42,10 @@ export function drawCard(cardData) {
 		id: cardData._id,
 	});
 
-	console.log("Creating card group with ID:", cardData._id);
+	// --------------------------------------------------
+	// 🟦 Background
+	// --------------------------------------------------
 
-	// 🔳 Background rectangle
 	const background = new Konva.Rect({
 		width: CARD_STYLE.width,
 		height: CARD_STYLE.height,
@@ -30,11 +57,14 @@ export function drawCard(cardData) {
 		shadowOpacity: CARD_STYLE.shadowOpacity,
 	});
 
-	// 💾 Store a direct reference
+	// Store direct reference (no findOne ever again)
 	group.background = background;
 
-	// 🔤 Title text
-	const text = new Konva.Text({
+	// --------------------------------------------------
+	// 🔤 Title
+	// --------------------------------------------------
+
+	const titleText = new Konva.Text({
 		text: cardData.title,
 		fontSize: 16,
 		x: 10,
@@ -42,347 +72,123 @@ export function drawCard(cardData) {
 		width: CARD_STYLE.width - 20,
 		fill: "#222",
 	});
-	group.titleText = text; // Optional, store reference if you’ll update it
 
-	group.add(background, text);
+	group.titleText = titleText;
+
+	// --------------------------------------------------
+	// 📦 Add to Group
+	// --------------------------------------------------
+
+	group.add(background);
+	group.add(titleText);
+
+	// --------------------------------------------------
+	// 🖱️ Hover Listeners
+	// --------------------------------------------------
 
 	group.on("mouseenter", mouseenterHandler);
 	group.on("mouseleave", mouseleaveHandler);
 
-	appState.layer.add(group);
-	appState.layer.draw();
+	// --------------------------------------------------
+	// 🖼️ Add to Layer
+	// --------------------------------------------------
 
-	// 🧠 Track group on card
+	worldLayer.add(group);
+	worldLayer.draw();
+
+	// --------------------------------------------------
+	// 💾 Store Render Reference in SSOT
+	// --------------------------------------------------
+
 	appState.renderedCards[cardData._id] = group;
 }
 
-//!TO DO removed consts
-//Rerender
-export function updateCardVisual(card, group) {
-	if (!group.background) return;
+/* ============================================================
+   🎨 UPDATE CARD VISUAL
+============================================================ */
 
-	let fill = "#ccc";
+export function updateCardVisual(cardData, group) {
+	// --------------------------------------------------
+	// 🔎 SSOT References
+	// --------------------------------------------------
 
-	if (card.currentZone === "ideaZone") {
-		fill = "#90e0ef";
+	const worldLayer = appState.layers.world;
+	const background = group.background;
+
+	if (!background) return;
+
+	// --------------------------------------------------
+	// 🎨 Determine Target Style
+	// --------------------------------------------------
+
+	let targetColor = COLORS.neutral;
+	let targetRadius = 10;
+
+	if (cardData.currentZone === "ideaZone") {
+		targetColor = COLORS.ideas;
+		targetRadius = 25;
 	}
 
-	if (card.currentZone === "taskZone") {
-		fill = "#f4a261";
+	if (cardData.currentZone === "taskZone") {
+		targetColor = COLORS.tasks;
+		targetRadius = 0;
 	}
 
-	group.background.fill(fill);
-	group.getLayer().batchDraw();
+	// --------------------------------------------------
+	// 🌀 Animate Using GSAP
+	// --------------------------------------------------
 
-	// console.log("hello");
+	const tweenState = {
+		fill: background.fill(),
+		radius: background.cornerRadius()[0] || 0,
+	};
 
-	// const background = group.background;
-	// if (!background) return;
+	gsap.to(tweenState, {
+		duration: 0.4,
+		fill: targetColor,
+		radius: targetRadius,
+		ease: "power2.out",
 
-	// background.fill("#ffaaaa");
-	// group.getLayer().batchDraw(); // For smoother updates
+		onUpdate: () => {
+			background.fill(tweenState.fill);
+			background.cornerRadius([tweenState.radius, tweenState.radius, tweenState.radius, tweenState.radius]);
 
-	// if (card.currentZone === "ideaZone") {
-	// 	background.fill("#90e0ef");
-	// } else if (card.currentZone === "taskZone") {
-	// 	background.fill("#f4a261");
-	// } else {
-	// 	background.fill("#ccc"); // fallback
-	// }
-
-	// group.getLayer().batchDraw(); // ✅ Forces visual update
-}
-
-export function updateAllCardVisuals() {
-	Object.values(appState.cards).forEach((card) => {
-		const group = appState.renderedCards[card._id];
-		if (!group) return;
-
-		// Re-detect zone based on saved position
-		const detectedZone = detectZone(card.position);
-
-		card.currentZone = detectedZone ? detectedZone.id : null;
-
-		updateCardVisual(card, group);
+			worldLayer.batchDraw();
+		},
 	});
 }
 
-// // 🔧 Core
-// import Konva from "konva";
-// import { appState } from "../core/appState.js";
+/* ============================================================
+   🔄 UPDATE ALL CARDS (On Load)
+============================================================ */
 
-// // 📦 Constants
-// import { CARD_STYLE, CARD_DEFAULT_STYLE, CARD_LIFTED_STYLE } from "../core/styles.js";
+export function updateAllCardVisuals() {
+	// --------------------------------------------------
+	// 🔎 SSOT References
+	// --------------------------------------------------
 
-// // 🧠 Logic
-// import { detectZone } from "../actions/zoneActions.js";
+	const cards = appState.cards;
+	const renderedCards = appState.renderedCards;
 
-// // 🎨 Render helpers
-// import { updateCardVisual } from "./zoneRenderer.js";
+	// --------------------------------------------------
+	// 🔁 Reconcile each card
+	// --------------------------------------------------
 
-// // 🔌 Ports
-// import { saveCard, deleteCard } from "../services/pouchdb.js";
+	Object.values(cards).forEach((card) => {
+		const group = renderedCards[card._id];
+		if (!group) return;
 
-// export function drawCard(cardData) {
-// 	const group = new Konva.Group({
-// 		x: cardData.position.x,
-// 		y: cardData.position.y,
-// 		draggable: true,
-// 		id: cardData._id,
-// 	});
+		// 🔍 Recalculate zone from world position
+		const detectedZone = detectZone(card.position);
+		card.currentZone = detectedZone ? detectedZone.id : null;
 
-// 	// ⬜️ Background
-// 	const background = new Konva.Rect({
-// 		width: CARD_STYLE.width,
-// 		height: CARD_STYLE.height,
-// 		fill: CARD_STYLE.fill,
-// 		cornerRadius: CARD_STYLE.cornerRadius,
-// 		stroke: CARD_STYLE.stroke,
-// 		strokeWidth: CARD_STYLE.strokeWidth,
-// 		shadowBlur: CARD_STYLE.shadowBlur,
-// 		shadowOpacity: CARD_STYLE.shadowOpacity,
-// 		name: "background",
-// 	});
+		// 🎨 Apply correct visual state
+		updateCardVisual(card, group);
+	});
 
-// 	// 🧠 Store a reference directly on the group
-// 	group.background = background;
+	// --------------------------------------------------
+	// 🎬 Ensure redraw
+	// --------------------------------------------------
 
-// 	// 🔤 Title
-// 	const text = new Konva.Text({
-// 		text: cardData.title,
-// 		fontSize: 16,
-// 		x: 10,
-// 		y: 10,
-// 		width: CARD_STYLE.width - 20,
-// 		fill: "#222",
-// 	});
-
-// 	// 🔡 Description
-// 	const desc = new Konva.Text({
-// 		text: cardData.description || "",
-// 		fontSize: 12,
-// 		x: 10,
-// 		y: 30,
-// 		width: 140,
-// 		fill: "#444",
-// 	});
-
-// 	// 🌄 Current Zone
-// 	const space = new Konva.Text({
-// 		text: cardData.currentSpace || "Pending",
-// 		fontsize: 12,
-// 		x: 10,
-// 		y: 50,
-// 		width: 140,
-// 		fill: "#444",
-// 	});
-
-// 	group.zoneLabel = space;
-
-// 	// ❌ Delete Button
-// 	const deleteBtn = new Konva.Rect({
-// 		x: CARD_STYLE.width - 20,
-// 		y: 5,
-// 		width: 15,
-// 		height: 15,
-// 		fill: "red",
-// 		cornerRadius: 3,
-// 	});
-
-// 	group.add(background, text, desc, space, deleteBtn);
-// 	appState.layer.add(group);
-// 	appState.layer.draw();
-
-// 	// 🧠 Track drag state
-// 	group.on("dragstart", () => {
-// 		appState.debug.activeCardId = cardData._id;
-// 	});
-
-// 	group.on("dragmove", () => {
-// 		// 1️⃣ Sync card data with visual position
-// 		cardData.position = {
-// 			x: group.x(),
-// 			y: group.y(),
-// 		};
-
-// 		// 2️⃣ Ask zone system which zone this position belongs to
-// 		const detectedZone = detectZone(cardData.position);
-
-// 		// 3️⃣ Only react if zone actually changed
-// 		if (cardData.currentZone !== (detectedZone?.id || null)) {
-// 			cardData.currentZone = detectedZone ? detectedZone.id : null;
-// 			updateCardVisual(cardData, group);
-// 			console.log(`📦 Card now in zone: ${cardData.currentZone || "none"}`);
-// 		}
-// 	});
-
-// 	group.on("dragend", () => {
-// 		appState.debug.activeCardId = null;
-// 		appState.cards[cardData._id] = cardData;
-// 		saveCard(cardData);
-
-// 		// Reset all cards' corners
-// 		Object.values(appState.cards).forEach((card) => {
-// 			const g = appState.stage.findOne(`#${card._id}`);
-// 			const r = g?.findOne("Rect");
-// 			if (r) r.cornerRadius(8);
-// 		});
-
-// 		appState.layer.draw();
-// 	});
-
-// 	// Full Schema on Hover
-// 	group.on("mouseenter", () => {
-// 		appState.debug.hoveredCardId = cardData._id;
-
-// 		// group.to({
-// 		// 	scaleX: 1.05,
-// 		// 	scaleY: 1.05,
-// 		// 	duration: 0.15,
-// 		// 	shadowBlur: 15,
-// 		// 	shadowOpacity: 0.4,
-// 		// 	easing: Konva.Easings.EaseInOut,
-// 		// });
-// 		// group.getStage().container().style.cursor = "pointer";
-// 	});
-
-// 	group.on("mouseleave", () => {
-// 		appState.debug.hoveredCardId = null;
-
-// 		// if (!group.isDragging()) {
-// 		// 	group.to({
-// 		// 		scaleX: 1,
-// 		// 		scaleY: 1,
-// 		// 		duration: 0.15,
-// 		// 		shadowBlur: 5,
-// 		// 		shadowOpacity: 0.2,
-// 		// 		easing: Konva.Easings.EaseInOut,
-// 		// 	});
-// 		// }
-// 		// group.getStage().container().style.cursor = "default";
-// 	});
-
-// 	group.on("dblclick", () => {
-// 		// Collapse previously expanded card (if any)
-// 		if (appState.debug.expandedCardId) {
-// 			const prevGroup = appState.stage.findOne(`#${appState.debug.expandedCardId}`);
-// 			if (prevGroup && prevGroup !== group) {
-// 				prevGroup.to({
-// 					scaleX: 1,
-// 					scaleY: 1,
-// 					duration: 0.2,
-// 					easing: Konva.Easings.EaseInOut,
-// 				});
-// 			}
-// 		}
-
-// 		// Expand current card
-// 		group.to({
-// 			scaleX: 2.0,
-// 			scaleY: 2.0,
-// 			duration: 0.2,
-// 			easing: Konva.Easings.EaseInOut,
-// 		});
-
-// 		group.moveToTop();
-// 		appState.debug.expandedCardId = group.id();
-// 		appState.stage.draw();
-// 	});
-
-// 	deleteBtn.on("click", async () => {
-// 		await deleteCard(cardData._id);
-// 		group.destroy();
-// 		appState.layer.draw();
-// 	});
-
-// 	const bounds = group.getClientRect({ relativeTo: group });
-
-// 	group.offsetX(bounds.width / 2);
-// 	group.offsetY(bounds.height / 2);
-
-// 	// Update group position to compensate for new offset
-// 	group.position({
-// 		x: cardData.position.x + bounds.width / 2,
-// 		y: cardData.position.y + bounds.height / 2,
-// 	});
-
-// 	return group;
-// }
-
-// // import Konva from "konva";
-// // import { appState } from "../appState.js";
-// // import { saveCard, deleteCard } from "../db/pouch.js";
-
-// // // 🃏 Draw a single card on the canvas
-// // export function drawCard(cardData) {
-// // 	const s = appState.cardStyle;
-// // 	const layer = appState.layer;
-
-// // 	// Create a Konva group to hold card + text + delete button
-// // 	const group = new Konva.Group({
-// // 		x: cardData.position?.x ?? 100,
-// // 		y: cardData.position?.y ?? 100,
-// // 		draggable: true,
-// // 		id: cardData._id,
-// // 		name: "card-group",
-// // 	});
-
-// // 	// Card background
-// // 	const rect = new Konva.Rect({
-// // 		width: s.width,
-// // 		height: s.height,
-// // 		fill: s.fill,
-// // 		cornerRadius: s.cornerRadius,
-// // 		shadowBlur: s.shadowBlur,
-// // 		shadowOpacity: s.shadowOpacity,
-// // 		stroke: s.stroke,
-// // 		strokeWidth: s.strokeWidth,
-// // 	});
-
-// // 	// Card title
-// // 	const text = new Konva.Text({
-// // 		text: cardData.title ?? "Untitled",
-// // 		fontSize: 16,
-// // 		x: 10,
-// // 		y: 10,
-// // 		width: s.width - 30,
-// // 		fill: "#222",
-// // 	});
-
-// // 	// Delete button
-// // 	const deleteBtn = new Konva.Rect({
-// // 		x: s.width - 20,
-// // 		y: 5,
-// // 		width: 15,
-// // 		height: 15,
-// // 		fill: "red",
-// // 		cornerRadius: 3,
-// // 	});
-
-// // 	// ➕ Add elements to the group
-// // 	group.add(rect, text, deleteBtn);
-// // 	layer.add(group);
-// // 	layer.draw();
-
-// // 	// Track Dragging
-// // 	group.on("dragstart", () => {
-// // 		appState.activeDragCardId = cardData._id;
-// // 	});
-
-// // 	group.on("dragmove", () => {
-// // 		cardData.position = { x: group.x(), y: group.y() };
-// // 		appState.cards[cardData._id] = cardData;
-// // 	});
-
-// // 	group.on("dragend", () => {
-// // 		appState.activeDragCardId = null;
-// // 		saveCard(cardData);
-// // 	});
-
-// // 	// 🗑️ Delete handler
-// // 	deleteBtn.on("click", async () => {
-// // 		await deleteCard(cardData._id);
-// // 		group.destroy();
-// // 		layer.draw();
-// // 	});
-// // }
+	appState.layers.world.batchDraw();
+}

@@ -1,71 +1,70 @@
 // 📍 src/renderers/canvasRenderer.js
-// 🎨 Initializes the canvas and stores the Konva stage/layer into appState
+// 🎨 Responsible ONLY for initializing Konva stage + layers.
+//
+// This file:
+//   - Creates the Stage
+//   - Creates fixed layers
+//   - Stores references in appState
+//
+// It does NOT:
+//   - Draw zones
+//   - Draw grid
+//   - Setup listeners
+//   - Handle resize
+//   - Contain logic
+//
 
 import Konva from "konva";
 import { appState } from "../core/appState.js";
 
 export function initCanvas(containerId = "canvas-container") {
+	// --------------------------------------------------
+	// 📐 INITIAL DIMENSIONS
+	// --------------------------------------------------
 	const width = window.innerWidth;
 	const height = window.innerHeight;
 
+	// --------------------------------------------------
+	// 🏗 CREATE STAGE
+	// --------------------------------------------------
 	const stage = new Konva.Stage({
-		container: containerId, // HTML element ID
+		container: containerId,
 		width,
 		height,
 	});
 
-	const layer = new Konva.Layer();
-	stage.add(layer);
+	// --------------------------------------------------
+	// 🧱 CREATE LAYERS (3 TOTAL)
+	// --------------------------------------------------
+	const backgroundLayer = new Konva.Layer({ id: "backgroundLayer" });
+	const worldLayer = new Konva.Layer({ id: "worldLayer" });
+	const uiLayer = new Konva.Layer({ id: "uiLayer" });
 
-	// Save refs to appState for later drawing
+	stage.add(backgroundLayer);
+	stage.add(worldLayer);
+	stage.add(uiLayer);
+
+	// --------------------------------------------------
+	// 🌍 CREATE WORLD GROUP (CAMERA CONTAINER)
+	// --------------------------------------------------
+	const worldGroup = new Konva.Group({ id: "worldGroup" });
+
+	worldLayer.add(worldGroup);
+
+	// --------------------------------------------------
+	// 💾 SAVE TO SSOT
+	// --------------------------------------------------
 	appState.stage = stage;
-	appState.layer = layer;
+
+	appState.layers = {
+		background: backgroundLayer,
+		world: worldLayer,
+		ui: uiLayer,
+	};
+
+	appState.world = {
+		group: worldGroup,
+	};
+
+	console.log("✅ Canvas initialized with worldGroup");
 }
-
-// // src/canvas/canvas.js
-// import Konva from "konva";
-// import { appState } from "../core/appState.js";
-// import { updateStageSize } from "../interactions/listeners.js";
-// import { drawZones } from "./zoneRenderer.js";
-
-// updateStageSize();
-
-// // 🖼️ Initialize the canvas
-// export function initCanvas(containerId = "canvas-container") {
-// 	// 1️⃣ Create the Konva Stage (top-level container)
-// 	appState.stage = new Konva.Stage({
-// 		container: containerId,
-// 		width: appState.canvas.width,
-// 		height: appState.canvas.height,
-// 	});
-
-// 	// 2️⃣ Create and add a layer (holds drawable elements)
-// 	appState.layer = new Konva.Layer();
-// 	appState.stage.add(appState.layer);
-
-// 	// 3️⃣ Draw all background zones (defined in appState.zones)
-// 	drawZones();
-
-// 	// 4️⃣ Global mousedown logic
-// 	// 👉 Used later to collapse expanded cards, etc.
-// 	appState.stage.on("mousedown", (e) => {
-// 		const clickedOnCard = e.target.findAncestor(".card", true); // assuming 'card' class
-// 		const expandedId = appState.debug.expandedCardId;
-
-// 		if (!clickedOnCard && expandedId) {
-// 			const expandedGroup = appState.stage.findOne(`#${expandedId}`);
-// 			if (expandedGroup) {
-// 				expandedGroup.to({
-// 					scaleX: 1,
-// 					scaleY: 1,
-// 					duration: 0.2,
-// 					easing: Konva.Easings.EaseInOut,
-// 				});
-// 				appState.debug.expandedCardId = null;
-// 				appState.stage.draw();
-// 			}
-// 		}
-// 	});
-
-// 	console.log("✅ Canvas initialized");
-// }

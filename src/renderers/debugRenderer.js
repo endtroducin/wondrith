@@ -1,21 +1,47 @@
 // 📍 src/ui/debugPanel.js
-// 🛠️ Renders the floating debug panel and updates it live based on appState
+// 🛠️ Renders floating debug UI and reads live values from appState.
+// This file:
+//   - Creates DOM elements
+//   - Reads from appState
+//   - Calls camera actions
+//   - Toggles grid visibility
+//
+// It does NOT:
+//   - Mutate card data
+//   - Move the camera directly
+//   - Perform rendering logic
 
-import { moveCameraTo, setCameraZone } from "../actions/cameraActions.js";
+import { setCameraZone } from "../actions/cameraActions.js";
 import { appState } from "../core/appState.js";
 import { drawGrid } from "./gridRenderer.js";
-// import { moveCameraTo } from "../actions/cameraActions.js";
 
-let panel, toggle, debugTextBlock;
+let panel;
+let toggle;
+let debugTextBlock;
+let updateInterval;
+
+/* ============================================================
+   🚀 INITIALIZE DEBUG PANEL
+============================================================ */
 
 export function initDebugPanel() {
-	// 🔁 Avoid duplicates
+	// --------------------------------------------------
+	// 🔎 SSOT References
+	// --------------------------------------------------
+
+	const debugState = appState.debug;
+
+	// Prevent duplicates
 	if (document.getElementById("debug-panel")) return;
 
-	// 🧲 Toggle Button
+	// --------------------------------------------------
+	// 🔘 Toggle Button
+	// --------------------------------------------------
+
 	toggle = document.createElement("button");
 	toggle.id = "debug-toggle";
 	toggle.innerText = "⚙️ Debug";
+
 	Object.assign(toggle.style, {
 		position: "fixed",
 		top: "10px",
@@ -23,16 +49,21 @@ export function initDebugPanel() {
 		zIndex: "9999",
 		padding: "6px",
 	});
+
 	document.body.appendChild(toggle);
 
-	// 🧱 Debug Panel Element
+	// --------------------------------------------------
+	// 🧱 Panel Container
+	// --------------------------------------------------
+
 	panel = document.createElement("div");
 	panel.id = "debug-panel";
+
 	Object.assign(panel.style, {
 		position: "fixed",
 		top: "50px",
 		right: "10px",
-		width: "250px",
+		width: "260px",
 		background: "rgba(0,0,0,0.85)",
 		color: "#0f0",
 		fontFamily: "monospace",
@@ -42,58 +73,96 @@ export function initDebugPanel() {
 		whiteSpace: "pre-wrap",
 		zIndex: "9998",
 	});
+
 	document.body.appendChild(panel);
 
-	// 🧩 Default state is visible
-	appState.debug.panelVisible = true;
+	// --------------------------------------------------
+	// 🧩 Default Visibility
+	// --------------------------------------------------
+
+	debugState.panelVisible = true;
 	panel.style.display = "block";
 
-	// ✏️ Create a text block for real-time updates
+	// --------------------------------------------------
+	// 📄 Text Block
+	// --------------------------------------------------
+
 	debugTextBlock = document.createElement("pre");
-	debugTextBlock.id = "debug-text";
 	debugTextBlock.style.marginBottom = "8px";
 	panel.appendChild(debugTextBlock);
 
-	// 🎛️ Add camera control buttons
+	// --------------------------------------------------
+	// 🎛️ Camera Buttons
+	// --------------------------------------------------
+
 	const buttonRow = document.createElement("div");
+
 	buttonRow.innerHTML = `
-	<button>📷 Idea</button><button>📷 Plan</button><button>📷 Task</button>
+	<button>📷 Idea</button>
+	<button>📷 Plan</button>
+	<button>📷 Task</button>
 	`;
+
 	Array.from(buttonRow.children).forEach((btn) => {
 		btn.style.margin = "4px 4px 0 0";
 		btn.style.fontSize = "12px";
 		btn.style.cursor = "pointer";
 	});
+
 	panel.appendChild(buttonRow);
 
-	// 🎯 Hook up camera actions
 	const [btnIdea, btnPlan, btnTask] = buttonRow.querySelectorAll("button");
-	btnIdea.onclick = () => moveCameraTo("idea");
-	btnPlan.onclick = () => moveCameraTo("plan");
-	btnTask.onclick = () => moveCameraTo("task");
 
-	// 🎛️ Toggle logic
+	btnIdea.onclick = () => setCameraZone("idea");
+	btnPlan.onclick = () => setCameraZone("plan");
+	btnTask.onclick = () => setCameraZone("task");
+
+	// --------------------------------------------------
+	// 🔁 Toggle Logic
+	// --------------------------------------------------
+
 	toggle.addEventListener("click", () => {
-		appState.debug.panelVisible = !appState.debug.panelVisible;
-		panel.style.display = appState.debug.panelVisible ? "block" : "none";
+		debugState.panelVisible = !debugState.panelVisible;
+
+		panel.style.display = debugState.panelVisible ? "block" : "none";
+
 		drawGrid();
 	});
 
-	// 🖥️ Passive UI Update Loop
-	setInterval(() => {
-		if (!appState.debug.panelVisible) return;
+	// --------------------------------------------------
+	// 🖥️ Passive Update Loop
+	// --------------------------------------------------
+
+	updateInterval = setInterval(() => {
+		if (!debugState.panelVisible) return;
+
 		debugTextBlock.textContent = formatDebugText();
-	}, 100); // Refresh every 250ms (adjust if needed)
+	}, 120);
 }
 
-function formatDebugText() {
-	let hoveredCardDetails = "  None";
-	const hoveredId = appState.debug.hoveredCardId;
+/* ============================================================
+   📝 FORMAT DEBUG TEXT
+============================================================ */
 
-	if (hoveredId && appState.cards[hoveredId]) {
-		const card = appState.cards[hoveredId];
-		hoveredCardDetails = `  Title:      ${card.title}
-  Type:       ${card.type || "Unknown"}
+function formatDebugText() {
+	// --------------------------------------------------
+	// 🔎 SSOT References
+	// --------------------------------------------------
+
+	const mouse = appState.mouse;
+	const canvas = appState.canvas;
+	const cards = appState.cards;
+	const cameraBounds = appState.camera.bounds;
+	const hoveredId = appState.debug.hoveredCardId;
+	const activeDrag = appState.debug.activeCardId;
+
+	let hoveredCardDetails = "  None";
+
+	if (hoveredId && cards[hoveredId]) {
+		const card = cards[hoveredId];
+
+		hoveredCardDetails = `
+  Title:      ${card.title}
   Position:   x: ${Math.round(card.position.x)}, y: ${Math.round(card.position.y)}
   Zone:       ${card.currentZone || "None"}
 `;
@@ -103,19 +172,19 @@ function formatDebugText() {
 🛠️  Debug Panel
 ━━━━━━━━━━━━━━━━━━━━━━━━
 Time:        ${new Date().toLocaleTimeString()}
-Mouse:       ${appState.mouse.x} × ${appState.mouse.y}
-Canvas:      ${appState.canvas.width} × ${appState.canvas.height}
-Cards:       ${Object.keys(appState.cards).length}
-Dragging:    ${appState.activeDragCardId || "None"}
+Mouse:       ${mouse.x} × ${mouse.y}
+Canvas:      ${canvas.width} × ${canvas.height}
+Cards:       ${Object.keys(cards).length}
+Dragging:    ${activeDrag || "None"}
 
-📷 Camera View:
+📷 Camera View
 ━━━━━━━━━━━━━━━━━━━━━━━━
-Top:       ${Math.round(appState.camera.bounds.top)}
-Right:     ${Math.round(appState.camera.bounds.right)}
-Bottom:    ${Math.round(appState.camera.bounds.bottom)}
-Left:      ${Math.round(appState.camera.bounds.left)}
+Top:       ${Math.round(cameraBounds.top)}
+Right:     ${Math.round(cameraBounds.right)}
+Bottom:    ${Math.round(cameraBounds.bottom)}
+Left:      ${Math.round(cameraBounds.left)}
 
-🖱️ Hovered Card:
+🖱️ Hovered Card
 ━━━━━━━━━━━━━━━━━━━━━━━━
 ${hoveredCardDetails}
 `.trim();

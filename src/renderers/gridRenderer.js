@@ -1,83 +1,129 @@
+// 📍 src/renderers/gridRenderer.js
+// 🧭 Responsible ONLY for drawing the debug grid
+// - Reads from appState
+// - Reads from GRID_STYLE
+// - Draws to background layer
+// - Does NOT mutate card data
+// - Does NOT control camera
+
 import Konva from "konva";
 import { appState } from "../core/appState.js";
 import { GRID_STYLE } from "../core/styles.js";
 
-let gridLayer, labelLayer;
+let gridGroup = null;
 
 export function drawGrid() {
-	// Clear existing grid if it exists
-	if (gridLayer) {
-		gridLayer.destroy();
-		gridLayer = null;
+	// ==================================================
+	// 🔍 STATE REFERENCES (Single Source of Truth)
+	// ==================================================
+	const stage = appState.stage;
+	const backgroundLayer = appState.layers.background;
+	const canvasWidth = appState.canvas.width;
+	const canvasHeight = appState.canvas.height;
+	const debugVisible = appState.debug.panelVisible;
+
+	// ==================================================
+	// 🎨 STYLE REFERENCES
+	// ==================================================
+	const gridSize = GRID_STYLE.gridSize;
+	const majorLineSpacing = GRID_STYLE.majorLine;
+	const darkColor = GRID_STYLE.darkColor;
+	const lightColor = GRID_STYLE.lightColor;
+	const strokeWidthMajor = GRID_STYLE.strokeWidthMajor;
+	const strokeWidthMinor = GRID_STYLE.strokeWidthMinor;
+	const labelFontSize = GRID_STYLE.labelFontSize;
+	const labelColor = GRID_STYLE.labelColor;
+
+	// ==================================================
+	// 🚪 EARLY EXIT
+	// ==================================================
+	if (!debugVisible) {
+		if (gridGroup) {
+			gridGroup.destroy();
+			gridGroup = null;
+			backgroundLayer.batchDraw();
+		}
+		return;
 	}
 
-	if (labelLayer) {
-		labelLayer.destroy();
-		labelLayer = null;
+	// ==================================================
+	// 🧹 CLEAN PREVIOUS GRID
+	// ==================================================
+	if (gridGroup) {
+		gridGroup.destroy();
+		gridGroup = null;
 	}
 
-	// Don’t draw grid unless debug is visible
-	if (!appState.debug.panelVisible) return;
+	// ==================================================
+	// 📦 CREATE GRID GROUP
+	// (One group so we don't create extra layers)
+	// ==================================================
+	gridGroup = new Konva.Group({
+		id: "debugGridGroup",
+		listening: false, // grid should not capture mouse events
+	});
 
-	const { width, height } = appState.canvas;
-	const range = 10000;
+	const range = 10000; // world draw range
 
-	gridLayer = new Konva.Layer();
-	labelLayer = new Konva.Layer();
+	// ==================================================
+	// 🔳 VERTICAL LINES
+	// ==================================================
+	for (let x = -range; x <= range; x += gridSize) {
+		const isMajor = x % majorLineSpacing === 0;
 
-	for (let x = -range; x <= range; x += GRID_STYLE.gridSize) {
-		const isMajor = x % GRID_STYLE.majorLine === 0;
-
-		// Draw vertical grid line
-		gridLayer.add(
+		gridGroup.add(
 			new Konva.Line({
 				points: [x, -range, x, range],
-				stroke: isMajor ? GRID_STYLE.darkColor : GRID_STYLE.lightColor,
-				strokeWidth: isMajor ? GRID_STYLE.strokeWidthMajor : GRID_STYLE.strokeWidthMinor,
+				stroke: isMajor ? darkColor : lightColor,
+				strokeWidth: isMajor ? strokeWidthMajor : strokeWidthMinor,
 			}),
 		);
 
-		// 🔢 Add X label
+		// Major X Labels (Pinned visually to bottom of screen)
 		if (isMajor) {
-			labelLayer.add(
+			gridGroup.add(
 				new Konva.Text({
 					text: `${x}`,
-					x: x + 2,
-					y: height - 16, // Pinned to bottom
-					fontSize: GRID_STYLE.labelFontSize,
-					fill: GRID_STYLE.labelColor,
+					x: x + 4,
+					y: -appState.camera.bounds.top + canvasHeight - 16,
+					fontSize: labelFontSize,
+					fill: labelColor,
 				}),
 			);
 		}
 	}
 
-	for (let y = -range; y <= range; y += GRID_STYLE.gridSize) {
-		const isMajor = y % GRID_STYLE.majorLine === 0;
+	// ==================================================
+	// 🔳 HORIZONTAL LINES
+	// ==================================================
+	for (let y = -range; y <= range; y += gridSize) {
+		const isMajor = y % majorLineSpacing === 0;
 
-		// Draw horizontal grid line
-		gridLayer.add(
+		gridGroup.add(
 			new Konva.Line({
 				points: [-range, y, range, y],
-				stroke: isMajor ? GRID_STYLE.darkColor : GRID_STYLE.lightColor,
-				strokeWidth: isMajor ? GRID_STYLE.strokeWidthMajor : GRID_STYLE.strokeWidthMinor,
+				stroke: isMajor ? darkColor : lightColor,
+				strokeWidth: isMajor ? strokeWidthMajor : strokeWidthMinor,
 			}),
 		);
 
-		// 🔢 Add Y label
+		// Major Y Labels (Pinned visually to left of screen)
 		if (isMajor) {
-			labelLayer.add(
+			gridGroup.add(
 				new Konva.Text({
 					text: `${y}`,
-					x: 2, // Pinned to left
-					y: y + 2,
-					fontSize: GRID_STYLE.labelFontSize,
-					fill: GRID_STYLE.labelColor,
+					x: -appState.camera.bounds.left + 4,
+					y: y + 4,
+					fontSize: labelFontSize,
+					fill: labelColor,
 				}),
 			);
 		}
 	}
 
-	appState.stage.add(gridLayer);
-	appState.stage.add(labelLayer);
-	gridLayer.moveToBottom(); // Ensure it stays beneath everything
+	// ==================================================
+	// 🧱 ADD TO BACKGROUND LAYER
+	// ==================================================
+	backgroundLayer.add(gridGroup);
+	backgroundLayer.batchDraw();
 }

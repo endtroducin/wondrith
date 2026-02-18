@@ -1,32 +1,63 @@
 // 📍 src/core/schemas.js
-// 📦 Data blueprint for cards. Called whenever we want to create a new one.
+// ======================================================
+// 📦 CARD DATA SCHEMA
+// ======================================================
+//
+// This file defines the canonical structure of a card.
+//
+// It contains NO rendering logic.
+// It contains NO appState references.
+// It contains NO database logic.
+//
+// It is a pure data blueprint.
+//
+// ======================================================
 
-export function defaultCardSchema() {
+export function defaultCardSchema(overrides = {}) {
+	// 🔹 Timestamp for creation
+	const now = new Date().toISOString();
+
 	return {
-		_id: `card-${Date.now()}`, // Unique ID
+		// ==================================================
+		// 🆔 IDENTITY
+		// ==================================================
+
+		_id: `card-${Date.now()}`,
+
+		// ==================================================
+		// 📝 CONTENT
+		// ==================================================
+
 		title: "New Card",
 		description: "",
-		position: { x: 100, y: 100 }, // Start near top-left
-		currentZone: null,
-		createdAt: new Date().toISOString(),
-		updatedAt: new Date().toISOString(),
+
+		// ==================================================
+		// 📍 WORLD POSITION
+		// ==================================================
+
+		position: {
+			x: 100,
+			y: 100,
+		},
+
+		// ==================================================
+		// 🗺️ ZONE STATE
+		// ==================================================
+
+		currentZone: null, // "idea" | "plan" | "task" | null
+
+		// ==================================================
+		// 📊 METADATA
+		// ==================================================
+
+		status: "new", // "new" | "in-progress" | "done"
+		createdAt: now,
+		updatedAt: now,
+
+		// ==================================================
+		// 🧩 OVERRIDES
+		// ==================================================
+
+		...overrides,
 	};
 }
-
-// // schema/cardTemplate.js
-
-// export function defaultCardSchema(overrides = {}) {
-// 	const now = new Date().toISOString();
-
-// 	return {
-// 		_id: `card-${Date.now()}`,
-// 		title: "New Card",
-// 		description: "...",
-// 		currentZone: "Ideas",
-// 		position: { x: 100, y: 100 },
-// 		status: "new", // 👈 FIXED: can't use TypeScript-style union in plain JS
-// 		createdAt: now,
-// 		updatedAt: now,
-// 		...overrides, // 👈 allows you to customize any field
-// 	};
-// }

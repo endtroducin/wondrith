@@ -1,7 +1,36 @@
+// 📍 src/interactions/mouseleave.js
+// 🖱️ Handles card hover exit interaction.
+//
+// Responsibility:
+// - Clear hovered card from SSOT
+//
+// Does NOT:
+// - Render
+// - Animate
+// - Modify card data
+//
+
 import { appState } from "../core/appState.js";
 
 export function mouseleaveHandler(evt) {
-	appState.debug.hoveredCardId = null;
+	// --------------------------------------------------
+	// 🔎 Explicit SSOT reference
+	// --------------------------------------------------
 
-	// Optional: Add visual reset here using evt.target.getParent() if needed
+	const debug = appState.debug;
+
+	// --------------------------------------------------
+	// 📝 Clear hover state
+	// --------------------------------------------------
+
+	debug.hoveredCardId = null;
+
+	// --------------------------------------------------
+	// 🧱 Optional future expansion
+	// --------------------------------------------------
+	// If you later want hover-out animations,
+	// you can safely access:
+	//
+	// const group = evt.target;
+	// and pass it to an animation function.
 }

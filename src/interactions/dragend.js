@@ -1,28 +1,61 @@
 // 📍 src/interactions/dragend.js
-// 🧲 Handles finishing a drag event on a card — updates DB and triggers rerenders.
+// 🧲 Handles finishing a drag event on a card.
+//
+// Responsibilities:
+// - Clear active drag state
+// - Persist card data to database
+// - Optionally finalize visual state
+//
+// This file does NOT:
+// - Detect zones (handled in dragmove)
+// - Update camera
+// - Redraw everything
+//
 
 import { appState } from "../core/appState.js";
 import { saveCard } from "../services/pouchdb.js";
-// Optional: import animations if you want post-drag effects
+import { updateCardVisual } from "../renderers/cardRenderer.js";
 
 export function dragendHandler(evt) {
+	// ======================================================
+	// 🔎 Explicit References (SSOT access)
+	// ======================================================
+
+	const stage = appState.stage;
+	const cards = appState.cards;
+	const renderedCards = appState.renderedCards;
+	const debug = appState.debug;
+
 	const group = evt.target;
 	const cardId = group.id();
+	const cardData = cards[cardId];
 
-	// Clear the active drag state
-	appState.debug.activeCardId = null;
+	if (!cardData) {
+		console.warn("Card not found in appState:", cardId);
+		return;
+	}
 
-	// We already updated position in dragmove,
-	// so we persist now that dragging is finished:
-	const cardData = appState.cards[cardId];
+	// ======================================================
+	// 1️⃣ Clear active drag state
+	// ======================================================
+
+	debug.activeCardId = null;
+
+	// ======================================================
+	// 2️⃣ Persist final position to DB
+	// ======================================================
+
 	saveCard(cardData);
 
-	// If you have logic for zone detection or visuals on drop,
-	// you can call those tools here or trigger animations.
+	// ======================================================
+	// 3️⃣ Ensure final visual state is correct
+	// ======================================================
 
-	// For example:
-	// zoneActions.updateCardZone(cardData);   // if you have zone logic
-	// animateCardDrop(cardId);                // if you have animations
+	if (renderedCards[cardId]) {
+		updateCardVisual(cardData, renderedCards[cardId]);
+	}
 
-	console.log("dragmove");
+	stage.batchDraw();
+
+	console.log("Drag ended:", cardId);
 }

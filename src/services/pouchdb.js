@@ -1,103 +1,85 @@
 // 📍 src/services/pouchdb.js
-// 🗃️ External storage access (local DB via PouchDB)
+// 🗃️ External persistence layer (PouchDB)
+//
+// This file is a SERVICE.
+// It communicates with storage only.
+// It does NOT:
+//   - mutate appState
+//   - call renderers
+//   - contain business logic
+//
+// Other parts of the app call this when they want persistence.
 
 import PouchDB from "pouchdb-browser";
 
+// ======================================================
+// 1️⃣ Database Initialization
+// ======================================================
+
+// Single DB instance for entire app
 export const db = new PouchDB("cards-db");
 
-// 🔄 Save or update a card in the DB
+// ======================================================
+// 2️⃣ Save Card
+// ======================================================
+// Saves or updates a card document.
+// Caller is responsible for:
+//   - Updating appState
+//   - Updating UI
+//   - Handling logic
+//
+// This function only persists data.
 export async function saveCard(card) {
+	// Ensure updated timestamp
+	card.updatedAt = new Date().toISOString();
+
 	try {
+		// Attempt to load existing revision
 		const existing = await db.get(card._id);
-		card._rev = existing._rev; // Required for updates
-	} catch (e) {
-		// No existing record? It's a new card.
+
+		// Required for updates
+		card._rev = existing._rev;
+	} catch (error) {
+		// 404 = new document, safe to create
+		if (error.status !== 404) {
+			console.error("Unexpected DB error:", error);
+			return;
+		}
 	}
-	await db.put(card);
+
+	try {
+		await db.put(card);
+	} catch (error) {
+		console.error("Failed to save card:", error);
+	}
 }
 
-// 📥 Load all cards from the DB
+// ======================================================
+// 3️⃣ Load All Cards
+// ======================================================
+// Returns array of card documents.
+// Does NOT modify appState.
 export async function loadAllCards() {
-	const result = await db.allDocs({ include_docs: true });
-	return result.rows.map((r) => r.doc);
+	try {
+		const result = await db.allDocs({
+			include_docs: true,
+		});
+
+		return result.rows.map((row) => row.doc);
+	} catch (error) {
+		console.error("Failed to load cards:", error);
+		return [];
+	}
 }
 
-// // src/db/pouch.js
-// import PouchDB from "pouchdb-browser";
-// export const db = new PouchDB("cards-db");
-
-// export async function saveCard(card) {
-// 	card.lastUpdated = new Date().toISOString();
-
-// 	try {
-// 		const existing = await db.get(card._id);
-// 		card._rev = existing._rev;
-// 	} catch (e) {
-// 		if (e.status !== 404) {
-// 			console.error("🔥 Unexpected error loading card for save:", e);
-// 			return;
-// 		}
-// 		// Safe to create new doc if 404
-// 	}
-
-// 	try {
-// 		await db.put(card);
-// 		console.log("💾 Card saved:", card._id);
-// 	} catch (e) {
-// 		console.error("🛑 Failed to save card:", e);
-// 	}
-// }
-
-// export async function deleteCard(id) {
-// 	try {
-// 		const doc = await db.get(id);
-// 		await db.remove(doc);
-// 	} catch (e) {}
-// }
-
-// export async function loadAllCards() {
-// 	const res = await db.allDocs({ include_docs: true });
-// 	return res.rows.map((r) => r.doc);
-// }
-
-// // import PouchDB from "pouchdb-browser";
-
-// // export const db = new PouchDB("cards-db");
-
-// // // 🧠 Save or update a card in PouchDB
-// // export async function saveCard(card) {
-// // 	try {
-// // 		// Try to get the latest doc (may or may not exist)
-// // 		const existing = await db.get(card._id);
-// // 		card._rev = existing._rev; // sync revision before update
-// // 	} catch (err) {
-// // 		if (err.status !== 404) {
-// // 			console.error("⚠️ Unexpected error fetching doc:", err);
-// // 			return;
-// // 		}
-// // 		// 404 is okay — new document
-// // 	}
-
-// // 	try {
-// // 		await db.put(card);
-// // 		console.log("💾 Card saved:", card._id);
-// // 	} catch (err) {
-// // 		console.error("🔴 Conflict or other error:", err);
-// // 	}
-// // }
-
-// // // 📦 Load all cards
-// // export async function loadAllCards() {
-// // 	const result = await db.allDocs({ include_docs: true });
-// // 	return result.rows.map((row) => row.doc);
-// // }
-
-// // export async function deleteCard(cardId) {
-// // 	try {
-// // 		const card = await db.get(cardId);
-// // 		await db.remove(card);
-// // 		console.log("🗑️ Deleted card:", cardId);
-// // 	} catch (e) {
-// // 		console.warn("Failed to delete card:", e.message);
-// // 	}
-// // }
+// ======================================================
+// 4️⃣ Delete Card (Optional but Recommended)
+// ======================================================
+export async function deleteCard(id) {
+	try {
+		const doc = await db.get(id);
+		await db.remove(doc);
+	} catch (error) {
+		console.error("Failed to delete card:", error);
+	}
+}

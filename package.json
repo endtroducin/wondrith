@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "konva": "^9.0.0",
+    "konva": "^10.2.0",
     "pouchdb-browser": "^8.0.1",
     "rollup-plugin-node-polyfills": "^0.2.1",
     "vite": "^7.3.1"
@@ -17,6 +17,7 @@
   "dependencies": {
     "buffer": "^6.0.3",
     "events": "^3.3.0",
+    "gsap": "^3.14.2",
     "process": "^0.11.10"
   }
 }
