@@ -155,6 +155,7 @@ function formatDebugText() {
 	const cameraBounds = appState.camera.bounds;
 	const hoveredId = appState.debug.hoveredCardId;
 	const activeDrag = appState.debug.activeCardId;
+	const heightUnderMouse = getHeightUnderMouse();
 
 	let hoveredCardDetails = "  None";
 
@@ -163,7 +164,10 @@ function formatDebugText() {
 
 		hoveredCardDetails = `
   Title:      ${card.title}
+  Type:       ${card.type}
   Position:   x: ${Math.round(card.position.x)}, y: ${Math.round(card.position.y)}
+  Z Height:   ${card.position.z ?? "derived"}
+  Friction:   ${card.frictionLevel}
   Zone:       ${card.currentZone || "None"}
 `;
 	}
@@ -177,6 +181,12 @@ Canvas:      ${canvas.width} × ${canvas.height}
 Cards:       ${Object.keys(cards).length}
 Dragging:    ${activeDrag || "None"}
 
+📏 Height Under Mouse
+━━━━━━━━━━━━━━━━━━━━━━━━
+Z:         ${Math.round(heightUnderMouse)}
+Cam Height: ${appState.camera.height}
+Zoom:       ${appState.camera.zoom}
+
 📷 Camera View
 ━━━━━━━━━━━━━━━━━━━━━━━━
 Top:       ${Math.round(cameraBounds.top)}
@@ -188,4 +198,34 @@ Left:      ${Math.round(cameraBounds.left)}
 ━━━━━━━━━━━━━━━━━━━━━━━━
 ${hoveredCardDetails}
 `.trim();
+}
+
+/* ============================================================
+   📏 HEIGHT UNDER MOUSE
+============================================================ */
+
+function getHeightUnderMouse() {
+	const stage = appState.stage;
+	const cards = appState.cards;
+	const rendered = appState.renderedCards;
+
+	if (!stage) return 1;
+
+	const pointer = stage.getPointerPosition();
+	if (!pointer) return 1;
+
+	const shape = stage.getIntersection(pointer);
+	if (!shape) return 1;
+
+	// Walk up to group
+	const group = shape.getParent();
+	if (!group) return 1;
+
+	const cardId = group.id();
+	const card = cards[cardId];
+
+	if (!card) return 1;
+
+	// Return top of object
+	return (card.elevation ?? 1) + (card.height ?? 0);
 }

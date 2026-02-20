@@ -1,16 +1,11 @@
 // 📍 src/renderers/cardRenderer.js
-// 🧱 Responsible ONLY for drawing + updating card visuals.
-// This file:
-//   - Creates Konva groups
-//   - Applies visual styling
-//   - Animates visual changes
-//   - Stores rendered references
-//
-// It does NOT:
-//   - Detect zones
-//   - Mutate card data
-//   - Save to DB
-//   - Handle drag logic
+// ======================================================
+// 🧱 CARD RENDERER
+// ======================================================
+// Draw + update visuals.
+// Cards live in worldGroup (camera container).
+// X/Y stay world coords. Elevation drives visual scale.
+// ======================================================
 
 import Konva from "konva";
 import { appState } from "../core/appState.js";
@@ -18,6 +13,7 @@ import { CARD_STYLE, COLORS } from "../core/styles.js";
 import { mouseenterHandler } from "../interactions/mouseenter.js";
 import { mouseleaveHandler } from "../interactions/mouseleave.js";
 import { detectZone } from "../actions/zoneActions.js";
+import { computeProjectedScale } from "../helpers/projection.js";
 import gsap from "gsap";
 
 /* ============================================================
@@ -26,26 +22,40 @@ import gsap from "gsap";
 
 export function drawCard(cardData) {
 	// --------------------------------------------------
-	// 🔎 SSOT REFERENCES (declared up top, always)
+	// 🔎 SSOT REFERENCES
 	// --------------------------------------------------
-
+	const worldGroup = appState.world.group;
 	const worldLayer = appState.layers.world;
 
 	// --------------------------------------------------
-	// 🎬 Create Group
+	// 🚪 GUARDS
 	// --------------------------------------------------
+	if (!worldGroup || !worldLayer) return;
 
+	// --------------------------------------------------
+	// 🧮 2.5D SCALE (VISUAL ONLY)
+	// --------------------------------------------------
+	const scale = computeProjectedScale({
+		cameraHeight: appState.camera.height,
+		zoom: appState.camera.zoom,
+		elevation: cardData.elevation,
+	});
+
+	// --------------------------------------------------
+	// 🎬 GROUP (WORLD X/Y)
+	// --------------------------------------------------
 	const group = new Konva.Group({
 		x: cardData.position.x,
 		y: cardData.position.y,
+		scaleX: scale,
+		scaleY: scale,
 		draggable: true,
 		id: cardData._id,
 	});
 
 	// --------------------------------------------------
-	// 🟦 Background
+	// 🟦 BACKGROUND
 	// --------------------------------------------------
-
 	const background = new Konva.Rect({
 		width: CARD_STYLE.width,
 		height: CARD_STYLE.height,
@@ -57,13 +67,11 @@ export function drawCard(cardData) {
 		shadowOpacity: CARD_STYLE.shadowOpacity,
 	});
 
-	// Store direct reference (no findOne ever again)
 	group.background = background;
 
 	// --------------------------------------------------
-	// 🔤 Title
+	// 🔤 TITLE
 	// --------------------------------------------------
-
 	const titleText = new Konva.Text({
 		text: cardData.title,
 		fontSize: 16,
@@ -76,30 +84,26 @@ export function drawCard(cardData) {
 	group.titleText = titleText;
 
 	// --------------------------------------------------
-	// 📦 Add to Group
+	// 📦 BUILD GROUP
 	// --------------------------------------------------
-
 	group.add(background);
 	group.add(titleText);
 
 	// --------------------------------------------------
-	// 🖱️ Hover Listeners
+	// 🖱️ HOVER
 	// --------------------------------------------------
-
 	group.on("mouseenter", mouseenterHandler);
 	group.on("mouseleave", mouseleaveHandler);
 
 	// --------------------------------------------------
-	// 🖼️ Add to Layer
+	// 🧷 ADD TO WORLD
 	// --------------------------------------------------
-
-	worldLayer.add(group);
-	worldLayer.draw();
+	worldGroup.add(group);
+	worldLayer.batchDraw();
 
 	// --------------------------------------------------
-	// 💾 Store Render Reference in SSOT
+	// 💾 TRACK RENDERED REF
 	// --------------------------------------------------
-
 	appState.renderedCards[cardData._id] = group;
 }
 
@@ -109,18 +113,16 @@ export function drawCard(cardData) {
 
 export function updateCardVisual(cardData, group) {
 	// --------------------------------------------------
-	// 🔎 SSOT References
+	// 🔎 SSOT REFERENCES
 	// --------------------------------------------------
-
 	const worldLayer = appState.layers.world;
 	const background = group.background;
 
 	if (!background) return;
 
 	// --------------------------------------------------
-	// 🎨 Determine Target Style
+	// 🎨 TARGET STYLES
 	// --------------------------------------------------
-
 	let targetColor = COLORS.neutral;
 	let targetRadius = 10;
 
@@ -135,60 +137,62 @@ export function updateCardVisual(cardData, group) {
 	}
 
 	// --------------------------------------------------
-	// 🌀 Animate Using GSAP
+	// 🧮 UPDATE 2.5D SCALE (IF ELEVATION CHANGED)
 	// --------------------------------------------------
+	const targetScale = computeProjectedScale({
+		cameraHeight: appState.camera.height,
+		zoom: appState.camera.zoom,
+		elevation: cardData.elevation,
+	});
 
+	// --------------------------------------------------
+	// 🌀 ANIMATE
+	// --------------------------------------------------
 	const tweenState = {
 		fill: background.fill(),
 		radius: background.cornerRadius()[0] || 0,
+		scale: group.scaleX(),
 	};
 
 	gsap.to(tweenState, {
 		duration: 0.4,
 		fill: targetColor,
 		radius: targetRadius,
+		scale: targetScale,
 		ease: "power2.out",
-
 		onUpdate: () => {
 			background.fill(tweenState.fill);
 			background.cornerRadius([tweenState.radius, tweenState.radius, tweenState.radius, tweenState.radius]);
-
+			group.scale({ x: tweenState.scale, y: tweenState.scale });
 			worldLayer.batchDraw();
 		},
 	});
 }
 
 /* ============================================================
-   🔄 UPDATE ALL CARDS (On Load)
+   🔄 UPDATE ALL CARDS (ON LOAD)
 ============================================================ */
 
 export function updateAllCardVisuals() {
 	// --------------------------------------------------
-	// 🔎 SSOT References
+	// 🔎 SSOT REFERENCES
 	// --------------------------------------------------
-
 	const cards = appState.cards;
 	const renderedCards = appState.renderedCards;
 
 	// --------------------------------------------------
-	// 🔁 Reconcile each card
+	// 🔁 RECONCILE
 	// --------------------------------------------------
-
 	Object.values(cards).forEach((card) => {
 		const group = renderedCards[card._id];
 		if (!group) return;
 
-		// 🔍 Recalculate zone from world position
+		// Zone from world X/Y
 		const detectedZone = detectZone(card.position);
 		card.currentZone = detectedZone ? detectedZone.id : null;
 
-		// 🎨 Apply correct visual state
 		updateCardVisual(card, group);
 	});
-
-	// --------------------------------------------------
-	// 🎬 Ensure redraw
-	// --------------------------------------------------
 
 	appState.layers.world.batchDraw();
 }

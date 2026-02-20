@@ -1,134 +1,121 @@
 // 📍 src/actions/cameraActions.js
-// 🎥 Camera system
-//
-// This file:
-//   • Reads from appState.camera
-//   • Calculates stage transform
-//   • Applies transform (animated)
-//   • Updates debug bounds
-//
-// It does NOT:
-//   • Handle UI events
-//   • Detect zones
-//   • Modify other state
+// ======================================================
+// 🎥 CAMERA ACTIONS
+// ======================================================
+// Reads appState.camera → applies transform to worldGroup.
+// Updates camera bounds for debug.
+// ======================================================
 
 import { appState } from "../core/appState.js";
 import gsap from "gsap";
 
-// ==================================================
-// 🎯 CAMERA PRESETS (logical anchors)
-// ==================================================
+/* ============================================================
+   🎬 APPLY CAMERA TRANSFORM
+============================================================ */
 
-const CAMERA_PRESETS = {
-	idea: {
-		worldAnchorY: () => appState.zones.ideaZone.y + appState.zones.ideaZone.height,
-
-		screenAnchorY: () => appState.canvas.height,
-	},
-
-	plan: {
-		worldAnchorY: () => 0,
-
-		screenAnchorY: () => appState.canvas.height / 2,
-	},
-
-	task: {
-		worldAnchorY: () => appState.zones.taskZone.y,
-
-		screenAnchorY: () => 0,
-	},
-};
-
-export function updateCameraFromState() {
+export function applyCameraTransform() {
 	// --------------------------------------------------
-	// 🔍 STATE REFERENCES
+	// 🔎 SSOT REFERENCES
 	// --------------------------------------------------
-	const stage = appState.stage;
-	const activeZone = appState.camera.activeZone;
-
-	// --------------------------------------------------
-	// 🧮 DERIVED VALUES
-	// --------------------------------------------------
-	const zoom = stage.scaleX();
-	const preset = CAMERA_PRESETS[activeZone];
+	const camera = appState.camera;
+	const worldGroup = appState.world.group;
+	const worldLayer = appState.layers.world;
 
 	// --------------------------------------------------
 	// 🚪 GUARDS
 	// --------------------------------------------------
-	if (!preset) {
-		console.warn("Invalid camera zone:", activeZone);
-		return;
-	}
+	if (!worldGroup || !worldLayer) return;
 
 	// --------------------------------------------------
-	// 📐 CALCULATE TARGET POSITION
+	// 📐 APPLY PAN (GROUND PLANE)
 	// --------------------------------------------------
-	const worldY = preset.worldAnchorY();
-	const screenY = preset.screenAnchorY();
-
-	// Solve:
-	// screenY = worldY * zoom + stageY
-	// stageY = screenY - worldY * zoom
-	const targetStageY = screenY - worldY * zoom;
+	// When camera.x increases, the world shifts left.
+	worldGroup.position({
+		x: -camera.x * camera.zoom,
+		y: -camera.y * camera.zoom,
+	});
 
 	// --------------------------------------------------
-	// 🎬 APPLY ANIMATED TRANSFORM
+	// 🔍 APPLY ZOOM
 	// --------------------------------------------------
-	gsap.to(stage, {
+	worldGroup.scale({
+		x: camera.zoom,
+		y: camera.zoom,
+	});
+
+	// --------------------------------------------------
+	// 🖌️ REDRAW + DEBUG
+	// --------------------------------------------------
+	worldLayer.batchDraw();
+	updateCameraBounds();
+}
+
+/* ============================================================
+   🎬 ANIMATE CAMERA TO TARGET
+============================================================ */
+
+export function animateCameraTo(target) {
+	// --------------------------------------------------
+	// 🔎 SSOT REFERENCES
+	// --------------------------------------------------
+	const camera = appState.camera;
+
+	// --------------------------------------------------
+	// 🎬 GSAP ANIMATION
+	// --------------------------------------------------
+	gsap.to(camera, {
 		duration: 0.8,
-		x: 0,
-		y: targetStageY,
+		x: target.x ?? camera.x,
+		y: target.y ?? camera.y,
+		zoom: target.zoom ?? camera.zoom,
+		height: target.height ?? camera.height,
 		ease: "expo.inOut",
-
-		onUpdate: () => {
-			stage.batchDraw();
-			updateCameraBounds();
-		},
+		onUpdate: applyCameraTransform,
 	});
 }
 
-// ==================================================
-// 🎯 PUBLIC ZONE SETTER
-// ==================================================
+/* ============================================================
+   🎯 SET CAMERA ZONE
+============================================================ */
 
 export function setCameraZone(zoneName) {
 	// --------------------------------------------------
-	// 🔍 STATE WRITE
+	// 💾 STATE WRITE
 	// --------------------------------------------------
 	appState.camera.activeZone = zoneName;
 
 	// --------------------------------------------------
-	// 🔁 TRIGGER CAMERA UPDATE
+	// 📐 ZONE TARGETS (MVP)
 	// --------------------------------------------------
-	updateCameraFromState();
+	// You can refine these once zones are final.
+	let targetY = 0;
+
+	if (zoneName === "idea") targetY = -appState.canvas.height / 2;
+	if (zoneName === "plan") targetY = 0;
+	if (zoneName === "task") targetY = appState.canvas.height / 2;
+
+	animateCameraTo({ y: targetY });
 }
 
-// ==================================================
-// 📊 UPDATE CAMERA BOUNDS (debug)
-// ==================================================
+/* ============================================================
+   📊 UPDATE CAMERA BOUNDS (DEBUG)
+============================================================ */
 
 export function updateCameraBounds() {
 	// --------------------------------------------------
-	// 🔍 STATE REFERENCES
+	// 🔎 SSOT REFERENCES
 	// --------------------------------------------------
-	const world = appState.world.group;
-	const zoom = world.scaleX();
+	const camera = appState.camera;
 	const viewportW = appState.canvas.width;
 	const viewportH = appState.canvas.height;
 
-	const worldX = world.x();
-	const worldY = world.y();
+	// --------------------------------------------------
+	// 🧮 WORLD BOUNDS
+	// --------------------------------------------------
+	const left = camera.x;
+	const top = camera.y;
+	const right = camera.x + viewportW / camera.zoom;
+	const bottom = camera.y + viewportH / camera.zoom;
 
-	// --------------------------------------------------
-	// 🧮 CALCULATE WORLD BOUNDS
-	// --------------------------------------------------
-	const left = -worldX / zoom;
-	const top = -worldY / zoom;
-	const right = left + viewportW / zoom;
-	const bottom = top + viewportH / zoom;
-
-	// --------------------------------------------------
-	// 💾 WRITE TO STATE
-	// --------------------------------------------------
 	appState.camera.bounds = { left, top, right, bottom };
 }

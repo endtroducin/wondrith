@@ -3,61 +3,78 @@
 // 📦 CARD DATA SCHEMA
 // ======================================================
 //
-// This file defines the canonical structure of a card.
+// Defines canonical structure for cards.
+// Pure data blueprint — no rendering logic.
 //
-// It contains NO rendering logic.
-// It contains NO appState references.
-// It contains NO database logic.
-//
-// It is a pure data blueprint.
-//
+
+// 📍 src/core/schemas.js
+// ======================================================
+// 📦 CARD DATA SCHEMA
+// ======================================================
+// Pure data blueprint. No appState. No rendering. No DB.
 // ======================================================
 
 export function defaultCardSchema(overrides = {}) {
-	// 🔹 Timestamp for creation
+	// --------------------------------------------------
+	// 🕒 DERIVED VALUES
+	// --------------------------------------------------
 	const now = new Date().toISOString();
 
-	return {
+	const baseCard = {
 		// ==================================================
 		// 🆔 IDENTITY
 		// ==================================================
-
 		_id: `card-${Date.now()}`,
 
 		// ==================================================
 		// 📝 CONTENT
 		// ==================================================
-
 		title: "New Card",
 		description: "",
 
 		// ==================================================
-		// 📍 WORLD POSITION
+		// 🌍 WORLD SPACE (GROUND PLANE)
 		// ==================================================
-
+		// x/y are ALWAYS ground-plane world coordinates
+		// (this keeps drag + zone math sane)
 		position: {
 			x: 100,
 			y: 100,
 		},
 
 		// ==================================================
+		// 🧱 2.5D VERTICALITY (TOWARD VIEWER)
+		// ==================================================
+		// elevation = where the bottom of the object is (toward camera)
+		// height    = how tall it extends upward from elevation
+		//
+		// NOTE: for MVP, we only use elevation for SCALE.
+		// height becomes useful when you draw cubes/buildings later.
+		elevation: 30, // e.g. 30..60 for ideas (clouds), 1..25 for tasks
+		height: 10, // e.g. buildings later
+
+		// ==================================================
 		// 🗺️ ZONE STATE
 		// ==================================================
-
-		currentZone: null, // "idea" | "plan" | "task" | null
+		currentZone: null, // "ideaZone" | "taskZone" | null
 
 		// ==================================================
-		// 📊 METADATA
+		// 📊 WORKFLOW STATE
 		// ==================================================
+		status: "new",
 
-		status: "new", // "new" | "in-progress" | "done"
+		// ==================================================
+		// 🕒 METADATA
+		// ==================================================
 		createdAt: now,
 		updatedAt: now,
+	};
 
-		// ==================================================
-		// 🧩 OVERRIDES
-		// ==================================================
-
+	// --------------------------------------------------
+	// 🧩 APPLY OVERRIDES
+	// --------------------------------------------------
+	return {
+		...baseCard,
 		...overrides,
 	};
 }

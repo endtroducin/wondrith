@@ -1,42 +1,32 @@
 // 📍 src/interactions/dragstart.js
-// 🧲 Handles the start of a drag interaction on a card.
-//
-// Responsibilities:
-// - Mark which card is currently being dragged
-// - (Optional) trigger visual lift
-//
-// Does NOT:
-// - Save to DB
-// - Detect zones
-// - Move camera
-//
+// ======================================================
+// 🧲 DRAG START
+// ======================================================
+// Marks the active card in debug state.
+// Does NOT move data.
+// Does NOT modify zones.
+// ======================================================
 
 import { appState } from "../core/appState.js";
 
 export function dragstartHandler(evt) {
-	// ======================================================
-	// 🔎 Explicit SSOT References
-	// ======================================================
-
+	// --------------------------------------------------
+	// 🔎 SSOT REFERENCES
+	// --------------------------------------------------
+	const cards = appState.cards;
 	const debug = appState.debug;
-	const renderedCards = appState.renderedCards;
 
+	// --------------------------------------------------
+	// 🎯 EVENT TARGET
+	// --------------------------------------------------
 	const group = evt.target;
 	const cardId = group.id();
+	const card = cards[cardId];
 
-	// ======================================================
-	// 1️⃣ Mark active dragged card
-	// ======================================================
+	if (!card) return;
 
+	// --------------------------------------------------
+	// 💾 SET ACTIVE CARD
+	// --------------------------------------------------
 	debug.activeCardId = cardId;
-
-	// ======================================================
-	// 2️⃣ Optional: Lift animation (visual only)
-	// ======================================================
-
-	// If you want:
-	// const cardGroup = renderedCards[cardId];
-	// animateCardLift(cardGroup);
-
-	console.log("Drag started →", cardId);
 }

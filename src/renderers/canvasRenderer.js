@@ -1,18 +1,10 @@
+// ==================================================
 // 📍 src/renderers/canvasRenderer.js
-// 🎨 Responsible ONLY for initializing Konva stage + layers.
-//
-// This file:
-//   - Creates the Stage
-//   - Creates fixed layers
-//   - Stores references in appState
-//
-// It does NOT:
-//   - Draw zones
-//   - Draw grid
-//   - Setup listeners
-//   - Handle resize
-//   - Contain logic
-//
+// ==================================================
+// 🎨 Initializes Konva stage + core layers.
+// This file ONLY creates rendering containers.
+// No logic. No drawing. No listeners.
+// ==================================================
 
 import Konva from "konva";
 import { appState } from "../core/appState.js";
@@ -34,37 +26,41 @@ export function initCanvas(containerId = "canvas-container") {
 	});
 
 	// --------------------------------------------------
-	// 🧱 CREATE LAYERS (3 TOTAL)
+	// 🧱 CREATE LAYERS (ONLY 2)
 	// --------------------------------------------------
-	const backgroundLayer = new Konva.Layer({ id: "backgroundLayer" });
 	const worldLayer = new Konva.Layer({ id: "worldLayer" });
 	const uiLayer = new Konva.Layer({ id: "uiLayer" });
 
-	stage.add(backgroundLayer);
 	stage.add(worldLayer);
 	stage.add(uiLayer);
 
 	// --------------------------------------------------
 	// 🌍 CREATE WORLD GROUP (CAMERA CONTAINER)
 	// --------------------------------------------------
-	const worldGroup = new Konva.Group({ id: "worldGroup" });
+	const worldGroup = new Konva.Group({
+		id: "worldGroup",
+		x: 0,
+		y: 0,
+		scaleX: 1,
+		scaleY: 1,
+	});
 
 	worldLayer.add(worldGroup);
 
 	// --------------------------------------------------
-	// 💾 SAVE TO SSOT
+	// 💾 WRITE TO SSOT
 	// --------------------------------------------------
 	appState.stage = stage;
 
 	appState.layers = {
-		background: backgroundLayer,
 		world: worldLayer,
 		ui: uiLayer,
 	};
 
 	appState.world = {
 		group: worldGroup,
+		focalLength: 1000,
 	};
 
-	console.log("✅ Canvas initialized with worldGroup");
+	console.log("✅ Canvas initialized (2-layer system)");
 }

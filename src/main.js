@@ -11,7 +11,7 @@ import { drawGrid } from "./renderers/gridRenderer.js";
 import { loadCards } from "./actions/cardActions.js";
 import { initDebugPanel } from "./renderers/debugRenderer.js";
 import { setupListeners, setupInteractionListeners, handleResize } from "./interactions/listeners.js";
-import { updateCameraFromState } from "./actions/cameraActions.js";
+import { applyCameraTransform } from "./actions/cameraActions.js";
 
 // =====================================================
 // 1️⃣ Initialize Canvas + Layers
@@ -61,4 +61,4 @@ handleResize();
 // =====================================================
 // 8️⃣ Sync Camera to State
 // =====================================================
-updateCameraFromState();
+applyCameraTransform();

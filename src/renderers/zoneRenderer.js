@@ -1,65 +1,50 @@
+// ==================================================
 // 📍 src/renderers/zoneRenderer.js
-// 🎨 Responsible ONLY for drawing zone rectangles.
-// This file:
-//   - Reads appState.zones
-//   - Draws them to the background layer
-//   - Does NOT mutate state
-//   - Does NOT detect zones
-//   - Does NOT handle interaction
+// ==================================================
+// 🎨 Draws logical world zones.
+// Zones exist in WORLD space.
+// They attach to worldGroup so camera affects them.
+// ==================================================
 
 import Konva from "konva";
 import { appState } from "../core/appState.js";
-
-/* ============================================================
-   🎨 DRAW ZONES
-============================================================ */
+import { DEFAULT_ZONES } from "../core/styles.js";
 
 export function drawZones() {
 	// --------------------------------------------------
-	// 🔎 SSOT References (explicit, always at top)
+	// 🔎 SSOT REFERENCES
 	// --------------------------------------------------
-
-	const zones = appState.zones;
-	const layers = appState.layers;
-
-	const backgroundLayer = layers.background;
-
-	if (!backgroundLayer) {
-		console.warn("Background layer not found.");
-		return;
-	}
+	const worldGroup = appState.world.group;
 
 	// --------------------------------------------------
-	// 🧹 Clear Previous Zones
+	// 🧹 CLEAR PREVIOUS ZONES
 	// --------------------------------------------------
-
-	// We only remove shapes named "zone"
-	backgroundLayer.find(".zone").forEach((node) => node.destroy());
+	worldGroup.find(".zone").forEach((node) => node.destroy());
 
 	// --------------------------------------------------
-	// 🔁 Draw Each Zone
+	// 💾 ENSURE ZONES EXIST IN STATE
 	// --------------------------------------------------
+	appState.zones = DEFAULT_ZONES;
 
-	Object.values(zones).forEach((zone) => {
+	// --------------------------------------------------
+	// 🎨 DRAW EACH ZONE
+	// --------------------------------------------------
+	Object.values(appState.zones).forEach((zone) => {
 		const rect = new Konva.Rect({
 			x: zone.x,
 			y: zone.y,
 			width: zone.width,
 			height: zone.height,
 			fill: zone.color,
-			opacity: 0.2,
-			cornerRadius: 10,
-			id: zone.id,
-			name: "zone", // allows selective clearing
-			listening: false, // zones are visual only
+			opacity: 0.15,
+			name: "zone",
 		});
 
-		backgroundLayer.add(rect);
+		worldGroup.add(rect);
 	});
 
 	// --------------------------------------------------
-	// 🖌️ Redraw Layer
+	// 🖌 REDRAW WORLD
 	// --------------------------------------------------
-
-	backgroundLayer.batchDraw();
+	appState.layers.world.batchDraw();
 }
