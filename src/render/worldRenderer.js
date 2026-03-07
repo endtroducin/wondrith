@@ -107,7 +107,7 @@ export function renderWorld() {
 	// ✅ the one projector used by all primitives
 	const projector = (p) =>
 		projectWorldToScreen(p, appState.camera, {
-			depthScale: 1, // tweak later
+			depthScale: 0.5, // tweak later
 		});
 
 	renderGrid({ projector });
