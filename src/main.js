@@ -1,64 +1,62 @@
+// ==================================================
 // 📍 src/main.js
-// 🚀 Application entry point.
-// This file ONLY orchestrates initialization order.
+// ==================================================
+// 🚀 APPLICATION ENTRY
+//
+// This file:
+//   • Seeds initial state (test cards)
+//   • Initializes world renderer
+//   • Renders first frame
+//   • Hooks window resize to rerender
+//
+// It does NOT:
+//   • Contain rendering logic
+//   • Contain projection math
+//   • Contain interaction logic
+// ==================================================
 
 import { appState } from "./core/appState.js";
-import { DEFAULT_ZONES } from "./core/styles.js";
+import { initPointerControls } from "./interaction/pointerController.js";
+import { initWorldRenderer, renderWorld, resizeWorld } from "./render/worldRenderer.js";
+/* ============================================================
+   🧪 SEED TEST DATA
+============================================================ */
 
-import { initCanvas } from "./renderers/canvasRenderer.js";
-import { drawZones } from "./renderers/zoneRenderer.js";
-import { drawGrid } from "./renderers/gridRenderer.js";
-import { loadCards } from "./actions/cardActions.js";
-import { initDebugPanel } from "./renderers/debugRenderer.js";
-import { setupListeners, setupInteractionListeners, handleResize } from "./interactions/listeners.js";
-import { applyCameraTransform } from "./actions/cameraActions.js";
+function seedTestCards() {
+	appState.cards["card-1"] = {
+		_id: "card-1",
+		kind: "card", // future: "task" draws cube
+		title: "Card 1",
+		position: { x: 200, y: 250, z: 0 },
+		width: 180,
+		height: 120,
+	};
 
-// =====================================================
-// 1️⃣ Initialize Canvas + Layers
-// =====================================================
-initCanvas();
+	appState.cards["card-2"] = {
+		_id: "card-2",
+		kind: "card",
+		title: "Card 2",
+		position: { x: 520, y: 320, z: 0 },
+		width: 180,
+		height: 120,
+	};
+}
 
-// =====================================================
-// 2️⃣ Initialize Core State
-// =====================================================
+/* ============================================================
+   🚀 BOOT
+============================================================ */
 
-// Clone default zones into SSOT
-appState.zones = structuredClone(DEFAULT_ZONES);
+seedTestCards();
 
-// Set initial camera zone
-appState.camera.activeZone = "plan";
+initWorldRenderer({
+	containerId: "canvas-container",
+});
 
-// =====================================================
-// 3️⃣ Draw Static World (background layer)
-// =====================================================
-drawZones();
-drawGrid();
+initPointerControls();
 
-// =====================================================
-// 4️⃣ Load Data (cards)
-// =====================================================
-loadCards();
-// ⚠️ loadCards internally calls drawCard
-// ⚠️ and updateAllCardVisuals after load
+renderWorld();
 
-// =====================================================
-// 5️⃣ Setup Interaction System
-// =====================================================
-setupListeners();
-setupInteractionListeners();
-
-// =====================================================
-// 6️⃣ Setup Debug UI
-// =====================================================
-initDebugPanel();
-
-// =====================================================
-// 7️⃣ Handle Resize
-// =====================================================
-window.addEventListener("resize", handleResize);
-handleResize();
-
-// =====================================================
-// 8️⃣ Sync Camera to State
-// =====================================================
-applyCameraTransform();
+window.addEventListener("resize", () => {
+	resizeWorld();
+	renderWorld();
+});
