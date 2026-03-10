@@ -1,62 +1,158 @@
 // ==================================================
 // 📍 src/main.js
 // ==================================================
-// 🚀 APPLICATION ENTRY
+// 🚀 APPLICATION ENTRY POINT
 //
-// This file:
-//   • Seeds initial state (test cards)
-//   • Initializes world renderer
-//   • Renders first frame
-//   • Hooks window resize to rerender
+// Boots the engine foundation and wires together
+// state, renderer, world builder, camera system,
+// drag interaction, and persistence.
 //
-// It does NOT:
-//   • Contain rendering logic
-//   • Contain projection math
-//   • Contain interaction logic
+// Responsibilities:
+//   • initialize renderer
+//   • initialize camera system
+//   • initialize world builder
+//   • initialize drag interaction
+//   • render only when needed
+//
+// Does NOT:
+//   • store business logic in meshes
+//   • act as world state
+//   • enable manual camera controls
 // ==================================================
 
+// 1️⃣ External libraries
+import "../styles.css";
+
+// 2️⃣ Core state
 import { appState } from "./core/appState.js";
-import { initPointerControls } from "./interaction/pointerController.js";
-import { initWorldRenderer, renderWorld, resizeWorld } from "./render/worldRenderer.js";
+
+// 4️⃣ Internal modules
+import {
+	initSceneRenderer,
+	renderFrame,
+	getScene,
+	getCamera,
+	getViewportSize,
+	getRendererDomElement,
+	requestRender,
+	setRenderCallback,
+} from "./render/sceneRenderer.js";
+
+import {
+	initCameraSystem,
+	updateCameraTransition,
+	zoomIn,
+	zoomOut,
+	setIdeaCameraView,
+	setPlanCameraView,
+	setTaskCameraView,
+} from "./interaction/cameraSystem.js";
+
+import {
+	initWorldBuilder,
+	syncWorldFromState,
+	getDraggableMeshes,
+	getEntityIdForMesh,
+	getEntityTypeForMesh,
+} from "./world/worldBuilder.js";
+
+import { initDragInteraction } from "./interaction/dragInteraction.js";
+
+import { seedStarterEntries, listEntries, clearAllEntries } from "./data/entryRepository.js";
+
+import { hydrateAppStateFromEntries } from "./data/hydrateAppState.js";
+
 /* ============================================================
-   🧪 SEED TEST DATA
+   BOOTSTRAP
 ============================================================ */
 
-function seedTestCards() {
-	appState.cards["card-1"] = {
-		_id: "card-1",
-		kind: "card", // future: "task" draws cube
-		title: "Card 1",
-		position: { x: 200, y: 250, z: 0 },
-		width: 180,
-		height: 120,
-	};
+const sceneRoot = document.getElementById("scene-root");
 
-	appState.cards["card-2"] = {
-		_id: "card-2",
-		kind: "card",
-		title: "Card 2",
-		position: { x: 520, y: 320, z: 0 },
-		width: 180,
-		height: 120,
-	};
+if (!sceneRoot) {
+	throw new Error("Missing #scene-root element.");
 }
 
+// --------------------------------------------------
+// Temporary reset during visual rebuild
+// --------------------------------------------------
+
+// await clearAllEntries();
+
+await seedStarterEntries();
+
+const entries = await listEntries();
+hydrateAppStateFromEntries(entries);
+
+initSceneRenderer(sceneRoot);
+initCameraSystem(getCamera(), getViewportSize, requestRender);
+initWorldBuilder(getScene());
+
+initDragInteraction({
+	camera: getCamera(),
+	domElement: getRendererDomElement(),
+	getDraggableMeshList: getDraggableMeshes,
+	getEntityIdForMesh,
+	getEntityTypeForMesh,
+	requestRender,
+});
+
 /* ============================================================
-   🚀 BOOT
+   RENDER PIPELINE
 ============================================================ */
 
-seedTestCards();
+function renderApp() {
+	syncWorldFromState();
+	renderFrame();
 
-initWorldRenderer({
-	containerId: "canvas-container",
+	if (updateCameraTransition()) {
+		requestRender();
+	}
+}
+
+setRenderCallback(renderApp);
+requestRender();
+
+/* ============================================================
+   TEMPORARY INPUT
+============================================================ */
+
+window.addEventListener("keydown", (event) => {
+	if (event.key === "1") {
+		setIdeaCameraView(700);
+	}
+
+	if (event.key === "2") {
+		setPlanCameraView(700);
+	}
+
+	if (event.key === "3") {
+		setTaskCameraView(700);
+	}
+
+	if (event.key === "=" || event.key === "+") {
+		zoomIn(450);
+	}
+
+	if (event.key === "-" || event.key === "_") {
+		zoomOut(450);
+	}
 });
 
-initPointerControls();
+/* ============================================================
+   PAGE VISIBILITY
+============================================================ */
 
-renderWorld();
-
-window.addEventListener("resize", () => {
-	resizeWorld();
-	renderWorld();
+document.addEventListener("visibilitychange", () => {
+	if (!document.hidden) {
+		requestRender();
+	}
 });
+
+/* ============================================================
+   DEBUG ACCESS
+============================================================ */
+
+window.__APP__ = {
+	appState,
+	clearAllEntries,
+};
