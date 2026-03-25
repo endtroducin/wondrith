@@ -1,63 +1,60 @@
 // ==================================================
 // 📍 src/core/appState.js
 // ==================================================
-// 🧠 SINGLE SOURCE OF TRUTH
+// 🗄 APP STATE
 //
-// Rules:
-//   • World space is fixed
-//   • Camera is state (x,y,zoom...)
-//   • Renderers project world → screen
-//
-// This file contains NO logic.
+// This is the SINGLE SOURCE OF TRUTH.
+// All rendering and interactions read/write from here.
 // ==================================================
 
-export const appState = {
-	// ==================================================
-	// 🎛️ KONVA REFERENCES
-	// ==================================================
-	stage: null,
+import { config } from "../config.js";
 
-	layers: {
-		world: null,
-	},
+/* ============================================================
+   📦 INITIALIZE APP STATE
+============================================================ */
 
-	// ==================================================
-	// 🖼️ VIEWPORT SIZE (SYNCED FROM STAGE)
-	// ==================================================
-	canvas: {
-		width: 0,
-		height: 0,
-	},
+export function initAppState() {
+	// Define the center of the screen in world coordinates.
+	const centerOffset = config.world.centerX;
+	const heightOffset = config.world.centerY;
 
-	// ==================================================
-	// 🎥 CAMERA STATE (NOT FULLY USED UNTIL STEP 6/7)
-	// ==================================================
-	camera: {
-		x: 0,
-		y: 0,
-		zoom: 1,
+	// Create the camera object.
+	// Position (x, y, z) represents the camera location in world space.
+	// Looking straight down means we look along the negative Z axis.
+	const camera = {
+		x: centerOffset,
+		y: heightOffset,
+		z: config.camera.lookingDistance, // How far the camera is from the ground
+	};
 
-		// reserved for step 5+ (2.5D)
-		height: 100,
-		focalLength: 1000,
-		activeZone: "plan",
-		bounds: {},
-	},
+	// Define the viewport: where on screen the world center projects to.
+	const viewport = {
+		centerX: window.innerWidth / 2,
+		centerY: window.innerHeight / 2,
+		width: window.innerWidth,
+		height: window.innerHeight,
+	};
 
-	// ==================================================
-	// 📦 WORLD DATA
-	// ==================================================
-	cards: {},
+	// Define the conversion band boundaries.
+	// These separate 'Ideas' (above) from 'Tasks' (below).
+	const worldBoundaries = {
+		conversionBandTop: 200, // Y coordinate above which clouds live
+		conversionBandBottom: 200, // Y coordinate below which towers live
+	};
 
-	// ==================================================
-	// 🎨 RENDERED NODE REFERENCES (PERSISTENT)
-	// ==================================================
-	rendered: {
-		grid: {
-			group: null,
+	// Create the container for application state.
+	const appState = {
+		camera,
+		viewport,
+		world: {
+			boundaries: worldBoundaries,
 		},
-		cards: {
-			// cardId -> Konva.Group
-		},
-	},
-};
+		// Collections of objects will be populated by the renderer
+		ideas: [],
+		tasks: [],
+	};
+
+	return appState;
+}
+
+export const appState = initAppState();
